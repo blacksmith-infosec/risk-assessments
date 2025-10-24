@@ -1,20 +1,64 @@
+
 const Home = () => (
-  <div className='panel'>
-    <h2>Welcome</h2>
-    <p>
-      This free assessment helps generate a quick view of security posture through a questionnaire and light domain
-      checks. Use the navigation above to begin.
-    </p>
-    <ul>
-      <li><strong>Questionnaire:</strong> Answer structured security questions.</li>
-      <li><strong>Domain Scan:</strong> Pull DNS & email auth signals (client-side limitations apply).</li>
-      <li><strong>Report:</strong> View risk score and remediation guidance; export results.</li>
-      <li><strong>Import/Export:</strong> Restore or save assessment JSON.</li>
-    </ul>
-    <p className='small-note'>
-      Data is stored locally in your browser (LocalStorage). No answers or scans are transmitted to a server.
-    </p>
-  </div>
+  <section className='home-panel modern-home'>
+    <header className='home-header'>
+      <h1>
+        Blacksmith Risk Assessment
+      </h1>
+      <p className='subtitle'>Free, private, and fast security posture check</p>
+    </header>
+    <main className='home-main'>
+      <div className='feature-grid'>
+        <div className='feature-card'>
+          <span className='feature-icon'>📝</span>
+          <h2>Questionnaire</h2>
+          <p>Answer structured security questions for a quick baseline.</p>
+        </div>
+        <div className='feature-card'>
+          <span className='feature-icon'>🔍</span>
+          <h2>Domain Scan</h2>
+          <p>Run automated DNS, email, and certificate checks.</p>
+        </div>
+        <div className='feature-card'>
+          <span className='feature-icon'>📊</span>
+          <h2>Report</h2>
+          <p>View risk score, remediation guidance, and export results.</p>
+        </div>
+        <div className='feature-card'>
+          <span className='feature-icon'>⏎</span>
+          <h2>Import</h2>
+          <p>Restore a saved assessment securely.</p>
+        </div>
+      </div>
+      <div className='home-notes'>
+        <div className='note'>
+          <span className='note-icon'>🔒</span>
+          <span>Data is stored locally in your browser. No answers or scans are transmitted to a server.</span>
+        </div>
+        <div className='note'>
+          <span className='note-icon'>💡</span>
+          <span>
+            This tool is provided free of charge and without warranty by{' '}
+            <a
+              href='https://blacksmithinfosec.com/?utm_source=risk-assessment-tool'
+              target='_blank'
+              rel='noopener noreferrer'
+              referrerPolicy='origin'
+            >
+              Blacksmith InfoSec
+            </a>. Suggestions, bug reports, or feedback? Report on{' '}
+            <a
+              href='https://github.com/blacksmithinfosec/risk-assessments/issues'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              GitHub
+            </a>. You are also welcome to fork this repo to create your own customized / personalized assessment tool.
+          </span>
+        </div>
+      </div>
+    </main>
+  </section>
 );
 
 export default Home;

@@ -1,20 +1,242 @@
-body {
-  font-family: system-ui, Arial, sans-serif;
-  margin: 0;
-  background: #f7f9fb;
-  color: #1a1d21;
+:root {
+  /* Light mode colors */
+  --page-bg: #F5F5F5;
+  --panel-bg: #FFFFFF;
+  --text-primary: #231F20;
+  --text-secondary: #06233F;
+  --accent: #44C8F5;
+  --card-bg: #FFFFFF;
+  --card-fg: #06233F;
+  --border-radius: 16px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  --shadow-hover: 0 4px 24px rgba(0,0,0,0.12);
+
+  /* Brand colors */
+  --black: #231F20;
+  --blue: #44C8F5;
+  --hoverblue: #d1ecff;
+  --darkblue: #06233F;
+  --gray: #A8A8A8;
+  --lightgray: #E8E8E8AA;
+  --grayshadow: #A8A8A888;
+  --darkgray: #3A3B3C;
+  --green: #18BB9C;
+  --yellow: #F39C11;
+  --red: #E84C3D;
+  --white: white;
 }
 
+.dark {
+  /* Dark mode colors with better contrast */
+  --page-bg: #1a1a1a;
+  --panel-bg: #2a2a2a;
+  --text-primary: #FFFFFF;
+  --text-secondary: #E0E0E0;
+  --accent: #44C8F5;
+  --card-bg: #3a3a3a;
+  --card-fg: #FFFFFF;
+  --shadow: 0 2px 16px rgba(0,0,0,0.3);
+  --shadow-hover: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+/* App wrapper panel styles */
+.app-panel.panel {
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem 2rem;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+}
+
+@media (max-width: 768px) {
+  .app-panel.panel {
+    margin: 1rem;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+  }
+}
+
+.panel .toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.toggle-btn {
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+
+.toggle-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.dark .toggle-btn {
+  background: var(--blue);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+}
+/* Modern Home panel styles with light/dark mode switch */
+
+.home-panel.modern-home {
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem 2rem;
+  max-width: 1080px;
+  margin: 2rem auto;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  transition: background 0.3s, color 0.3s;
+}
+
+@media (max-width: 768px) {
+  .home-panel.modern-home {
+    padding: 1.5rem 1rem;
+    margin: 1rem;
+  }
+}
+
+.home-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.logo-circle {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+.home-header h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  margin-top: 0.5rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 480px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+.feature-card {
+  background: var(--card-bg);
+  color: var(--card-fg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 1.2rem 1rem;
+  text-align: center;
+  transition: background 0.3s, color 0.3s, transform 0.2s, box-shadow 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.feature-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.feature-card h2 {
+  font-size: 1.1rem;
+  margin: 0.2rem 0 0.5rem 0;
+  font-weight: 600;
+}
+.feature-card p {
+  font-size: 0.98rem;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.home-notes {
+  margin-top: 1.5rem;
+}
+.note {
+  display: flex;
+  align-items: flex-start;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.7rem;
+  font-size: 0.98rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  transition: background 0.3s, color 0.3s;
+}
+.note-icon {
+  font-size: 1.3rem;
+  margin-right: 0.7rem;
+  margin-top: 0.1rem;
+}
+.note a {
+  color: var(--accent);
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.note a:hover {
+  color: #1a4fa0;
+}
 #root {
   padding: 1.5rem;
+  min-height: 100vh;
+  background: var(--page-bg);
+  transition: background 0.3s;
+}
+
+@media (max-width: 768px) {
+  #root {
+    padding: 0.5rem;
+  }
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, Arial, sans-serif;
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--text-primary);
+  transition: background 0.3s, color 0.3s;
 }
 
 .panel {
-  background: #fff;
+  background: var(--panel-bg);
+  color: var(--text-primary);
   padding: 1.25rem 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   margin-bottom: 1.5rem;
+  transition: background 0.3s, color 0.3s;
+}
+
+@media (max-width: 768px) {
+  .panel {
+    padding: 1rem;
+  }
 }
 
 .panel h2 {
@@ -36,39 +258,52 @@ select,
 input[type='text'],
 textarea {
   padding: 0.5rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--gray);
   border-radius: 6px;
   font-size: 0.95rem;
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  transition: border-color 0.2s, background 0.3s, color 0.3s;
 }
 
 select:focus,
 input:focus,
 textarea:focus {
-  outline: 2px solid #2563eb33;
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(68, 200, 245, 0.1);
 }
 
 button {
-  background: #2563eb;
-  color: #fff;
+  background: var(--blue);
+  color: var(--white);
   border: none;
   padding: 0.6rem 1rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  transition: background 0.2s, transform 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--darkblue);
+  transform: translateY(-1px);
 }
 
 button:disabled {
-  background: #93a3b8;
+  background: var(--gray);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .score-banner {
-  background: #1e293b;
-  color: #fff;
+  background: var(--darkblue);
+  color: var(--white);
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   margin: 0.75rem 0 1.25rem;
   font-weight: 600;
+  transition: background 0.3s;
 }
 
 .category-breakdown ul,
@@ -89,7 +324,7 @@ button:disabled {
 }
 
 .error {
-  color: #dc2626;
+  color: var(--red);
   font-weight: 600;
 }
 
@@ -99,18 +334,21 @@ button:disabled {
 }
 
 .recommendations li {
-  background: #f1f5f9;
+  background: var(--card-bg);
+  color: var(--text-primary);
   padding: 0.75rem 0.85rem;
   border-radius: 8px;
   margin-bottom: 0.75rem;
+  transition: background 0.3s, color 0.3s;
 }
 
 .rec-meta {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #334155;
+  color: var(--text-secondary);
   margin: 0.25rem 0 0.5rem;
+  opacity: 0.8;
 }
 
 .export-actions {
@@ -132,23 +370,44 @@ textarea {
 
 nav {
   display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
   flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  nav {
+    gap: 0.5rem;
+  }
 }
 
 nav a {
-  text-decoration: none;
-  background: #e2e8f0;
-  padding: 0.5rem 0.75rem;
+  background: var(--card-bg);
   border-radius: 6px;
-  color: #1e293b;
+  color: var(--blue);
   font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+@media (max-width: 768px) {
+  nav a {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+}
+
+nav a:hover {
+  transform: translateY(-1px);
+  background: var(--blue);
+  color: var(--white);
 }
 
 nav a.active {
-  background: #2563eb;
-  color: #fff;
+  background: var(--darkblue);
+  color: var(--white);
 }
 
 .report-content section {
@@ -157,21 +416,23 @@ nav a.active {
 
 .small-note {
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--text-secondary);
+  opacity: 0.8;
 }
 
 @media print {
   button,
   nav,
   .export-actions,
-  .actions {
+  .actions,
+  .toggle-row {
     display: none !important;
   }
-  body {
-    background: #fff;
+  body, #root {
+    background: white !important;
   }
-  .panel {
+  .panel, .app-panel, .home-panel {
     box-shadow: none;
-    border: none;
+    border: 1px solid #ddd;
   }
 }
