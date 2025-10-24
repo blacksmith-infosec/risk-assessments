@@ -5,6 +5,15 @@
     <link rel='icon' type='image/x-icon' href='https://assets.blacksmithinfosec.com/images/favicon.ico' />
     <meta name='viewport' content='width=device-width, initial-scale=1.0' />
     <title>Blacksmith InfoSec | Free Risk Assessment Tool</title>
+    <script>
+      (function() {
+        const redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id='root'></div>

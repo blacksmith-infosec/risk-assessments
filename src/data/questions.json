@@ -213,23 +213,23 @@
       "category": "Access Control",
       "options": [
         {
-          "option": "Automated workflow via HRIS/IdP integration with logged access changes",
-          "risk": "Automation shrinks exposure windows and improves audit trails; failures must be monitored.",
-          "points": 0
-        },
-        {
           "option": "Accounts are created/removed without a documented workflow",
           "risk": "Undocumented processes cause orphaned accounts and excessive access.",
-          "points": 33
+          "points": 0
         },
         {
           "option": "Documented workflow exists but is inconsistently followed",
           "risk": "Inconsistent execution delays removals and leaves stale access.",
-          "points": 67
+          "points": 33
         },
         {
           "option": "Documented workflow with approvals and checklists for provisioning/deprovisioning",
           "risk": "Documented workflows reduce errors; manual steps can lag.",
+          "points": 67
+        },
+        {
+          "option": "Automated workflow via HRIS/IdP integration with logged access changes",
+          "risk": "Automation shrinks exposure windows and improves audit trails; failures must be monitored.",
           "points": 100
         }
       ]
@@ -240,23 +240,23 @@
       "category": "Access Control",
       "options": [
         {
-          "option": "Quarterly reviews for all systems tied to role changes and regulated needs",
-          "risk": "Comprehensive reviews limit abuse risk; sustained effort required.",
-          "points": 0
-        },
-        {
           "option": "User access rights are not reviewed periodically",
           "risk": "Without reviews, excessive or stale access persists unnoticed.",
-          "points": 33
+          "points": 0
         },
         {
           "option": "Access reviews ad hoc or annually for key systems",
           "risk": "Limited reviews miss toxic combinations and least-privilege gaps.",
-          "points": 67
+          "points": 33
         },
         {
           "option": "Quarterly reviews for key systems with remediation tracking",
           "risk": "Quarterly reviews reduce privilege creep; scope gaps may remain.",
+          "points": 67
+        },
+        {
+          "option": "Quarterly reviews for all systems tied to role changes and regulated needs",
+          "risk": "Comprehensive reviews limit abuse risk; sustained effort required.",
           "points": 100
         }
       ]
@@ -267,23 +267,23 @@
       "category": "Access Control",
       "options": [
         {
-          "option": "Logs are reviewed with alerts",
-          "risk": "Reviews with alerts improve detection; fast attacks may still evade.",
-          "points": 0
-        },
-        {
           "option": "Privileged sessions are not logged or monitored",
           "risk": "Lack of monitoring hides misuse and lateral movement.",
-          "points": 50
-        },
-        {
-          "option": "Real-time monitoring and session recording for critical systems",
-          "risk": "Real-time monitoring enhances response and forensics; storage/privacy must be managed.",
-          "points": 50
+          "points": 0
         },
         {
           "option": "Privileged sessions are logged but not reviewed",
           "risk": "Unreviewed logs provide weak deterrence and delayed detection.",
+          "points": 33
+        },
+        {
+          "option": "Logs are reviewed with alerts",
+          "risk": "Reviews with alerts improve detection; fast attacks may still evade.",
+          "points": 67
+        },
+        {
+          "option": "Real-time monitoring and session recording for critical systems",
+          "risk": "Real-time monitoring enhances response and forensics; storage/privacy must be managed.",
           "points": 100
         }
       ]
@@ -321,19 +321,19 @@
       "category": "System & Data Protection",
       "options": [
         {
+          "option": "Patching is ad hoc with no defined SLAs",
+          "risk": "Ad hoc patching leaves known vulnerabilities exploitable.",
+          "points": 0
+        },
+        {
           "option": "Monthly for workstations; servers ad hoc",
           "risk": "Inconsistent cadence creates uneven exposure across systems.",
-          "points": 0
+          "points": 33
         },
         {
           "option": "Defined SLAs for all systems with maintenance windows",
           "risk": "SLAs reduce exposure windows; exceptions must be tracked.",
-          "points": 50
-        },
-        {
-          "option": "Patching is ad hoc with no defined SLAs",
-          "risk": "Ad hoc patching leaves known vulnerabilities exploitable.",
-          "points": 100
+          "points": 67
         },
         {
           "option": "Risk-based patching with rapid remediation and compliance reporting",
@@ -353,18 +353,18 @@
           "points": 0
         },
         {
-          "option": "Baselines for servers, endpoints, and cloud with enforced compliance and drift remediation",
-          "risk": "Enforced baselines limit misconfigurations; exceptions must be justified.",
-          "points": 0
-        },
-        {
           "option": "Baselines for a subset of systems",
           "risk": "Partial baselines leave exploitable gaps.",
-          "points": 50
+          "points": 33
         },
         {
           "option": "Baselines for servers and endpoints with periodic review",
           "risk": "Periodic reviews improve consistency; enforcement gaps allow drift.",
+          "points": 67
+        },
+        {
+          "option": "Baselines for servers, endpoints, and cloud with enforced compliance and drift remediation",
+          "risk": "Enforced baselines limit misconfigurations; exceptions must be justified.",
           "points": 100
         }
       ]
@@ -375,23 +375,23 @@
       "category": "System & Data Protection",
       "options": [
         {
-          "option": "Backups are encrypted and stored in a separate secured environment",
-          "risk": "Separate, encrypted storage improves resilience; admin path risks remain.",
-          "points": 0
-        },
-        {
           "option": "Backups are not encrypted or are stored with production",
           "risk": "Unencrypted or co-resident backups enable data theft and ransomware impact.",
           "points": 50
         },
         {
-          "option": "Backups are encrypted, immutable/offline, with segregated access",
-          "risk": "Immutable/offline backups resist ransomware; restores must be tested.",
-          "points": 50
-        },
-        {
           "option": "Backups are encrypted but stored within same security domain",
           "risk": "Same-domain storage risks simultaneous compromise.",
+          "points": 33
+        },
+        {
+          "option": "Backups are encrypted and stored in a separate secured environment",
+          "risk": "Separate, encrypted storage improves resilience; admin path risks remain.",
+          "points": 67
+        },
+        {
+          "option": "Backups are encrypted, immutable/offline, with segregated access",
+          "risk": "Immutable/offline backups resist ransomware; restores must be tested.",
           "points": 100
         }
       ]
@@ -402,18 +402,18 @@
       "category": "Monitoring & Incident Response",
       "options": [
         {
-          "option": "Logs centralized broadly with parsing and normalization",
-          "risk": "Broad, normalized logging improves detection; storage/cost must be managed.",
-          "points": 0
-        },
-        {
           "option": "Security event logs are not centralized",
           "risk": "Decentralized logs impede detection and forensics.",
-          "points": 67
+          "points": 0
         },
         {
           "option": "Logs centralized for a subset of sources",
           "risk": "Partial centralization leaves blind spots.",
+          "points": 50
+        },
+        {
+          "option": "Logs centralized broadly with parsing and normalization",
+          "risk": "Broad, normalized logging improves detection; storage/cost must be managed.",
           "points": 100
         }
       ]
@@ -424,18 +424,18 @@
       "category": "Monitoring & Incident Response",
       "options": [
         {
-          "option": "Risk-based alerts tuned with runbooks and escalation",
-          "risk": "Tuned, risk-based alerts speed response; maintenance is required to avoid drift.",
-          "points": 0
-        },
-        {
           "option": "No defined thresholds or alerts for suspicious activity",
           "risk": "Without alerts, suspicious activity goes unnoticed until damage occurs.",
-          "points": 50
+          "points": 0
         },
         {
           "option": "Basic alerts for common events",
           "risk": "Basic alerts catch common issues but can cause noise and fatigue.",
+          "points": 50
+        },
+        {
+          "option": "Risk-based alerts tuned with runbooks and escalation",
+          "risk": "Tuned, risk-based alerts speed response; maintenance is required to avoid drift.",
           "points": 100
         }
       ]
@@ -446,18 +446,18 @@
       "category": "Monitoring & Incident Response",
       "options": [
         {
-          "option": "Approved IRP reviewed at least annually",
-          "risk": "Reviewed IRP improves readiness; effectiveness depends on training and exercises.",
-          "points": 0
-        },
-        {
           "option": "No documented Incident Response Plan (IRP)",
           "risk": "Without an IRP, response is ad hoc, slow, and error-prone.",
-          "points": 50
+          "points": 0
         },
         {
           "option": "Draft IRP not approved or maintained",
           "risk": "Unapproved or stale IRP undermines coordination during crises.",
+          "points": 50
+        },
+        {
+          "option": "Approved IRP reviewed at least annually",
+          "risk": "Reviewed IRP improves readiness; effectiveness depends on training and exercises.",
           "points": 100
         }
       ]
@@ -468,18 +468,18 @@
       "category": "Monitoring & Incident Response",
       "options": [
         {
-          "option": "Annual incident response exercises with tracked action items",
-          "risk": "Annual exercises with tracked actions improve readiness; live-play may be needed.",
-          "points": 0
-        },
-        {
           "option": "No incident response exercises conducted",
           "risk": "Without exercises, teams are unprepared and roles unclear.",
-          "points": 75
+          "points": 0
         },
         {
           "option": "Tabletop exercises conducted less than annually",
           "risk": "Infrequent exercises allow process drift and skill atrophy.",
+          "points": 50
+        },
+        {
+          "option": "Annual incident response exercises with tracked action items",
+          "risk": "Annual exercises with tracked actions improve readiness; live-play may be needed.",
           "points": 100
         }
       ]
@@ -490,18 +490,18 @@
       "category": "Awareness & Training",
       "options": [
         {
+          "option": "No security awareness training provided",
+          "risk": "Lack of training increases human error and social engineering risk.",
+          "points": 0
+        },
+        {
           "option": "Training less than annually or only at onboarding",
           "risk": "Infrequent training leaves users unaware of evolving threats.",
-          "points": 0
+          "points": 50
         },
         {
           "option": "Annual training with completion tracking",
           "risk": "Annual tracked training raises awareness; reinforcement may still be needed.",
-          "points": 50
-        },
-        {
-          "option": "No security awareness training provided",
-          "risk": "Lack of training increases human error and social engineering risk.",
           "points": 100
         }
       ]
@@ -544,18 +544,18 @@
       "category": "Vendor & Third-Party Management",
       "options": [
         {
-          "option": "Contracts include data protection, breach notification, and security control obligations aligned to risk",
-          "risk": "Risk-aligned clauses improve enforceability; monitoring remains necessary.",
-          "points": 0
-        },
-        {
           "option": "Contracts lack data protection or confidentiality obligations",
           "risk": "Weak contracts reduce leverage to enforce security with vendors.",
-          "points": 75
+          "points": 0
         },
         {
           "option": "Contracts include basic confidentiality clauses",
           "risk": "Basic confidentiality lacks concrete security requirements.",
+          "points": 50
+        },
+        {
+          "option": "Contracts include data protection, breach notification, and security control obligations aligned to risk",
+          "risk": "Risk-aligned clauses improve enforceability; monitoring remains necessary.",
           "points": 100
         }
       ]
