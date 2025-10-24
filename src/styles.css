@@ -1,0 +1,177 @@
+body {
+  font-family: system-ui, Arial, sans-serif;
+  margin: 0;
+  background: #f7f9fb;
+  color: #1a1d21;
+}
+
+#root {
+  padding: 1.5rem;
+}
+
+.panel {
+  background: #fff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.panel h2 {
+  margin-top: 0;
+}
+
+.question-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.question-text {
+  font-weight: 600;
+}
+
+select,
+input[type='text'],
+textarea {
+  padding: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+  outline: 2px solid #2563eb33;
+}
+
+button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  background: #93a3b8;
+  cursor: not-allowed;
+}
+
+.score-banner {
+  background: #1e293b;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  margin: 0.75rem 0 1.25rem;
+  font-weight: 600;
+}
+
+.category-breakdown ul,
+.recommendations,
+.results ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.category-breakdown li {
+  padding: 0.25rem 0;
+}
+
+.domain-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.error {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.disclaimer {
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.recommendations li {
+  background: #f1f5f9;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.rec-meta {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #334155;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.export-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+textarea {
+  width: 100%;
+  font-family: monospace;
+}
+
+nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+nav a {
+  text-decoration: none;
+  background: #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+nav a.active {
+  background: #2563eb;
+  color: #fff;
+}
+
+.report-content section {
+  margin-bottom: 1rem;
+}
+
+.small-note {
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+@media print {
+  button,
+  nav,
+  .export-actions,
+  .actions {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .panel {
+    box-shadow: none;
+    border: none;
+  }
+}

@@ -1,0 +1,564 @@
+{
+  "questions": [
+    {
+      "id": "governance_program_management_q1",
+      "text": "Do you have written information security policies that is reviewed and approved annually?",
+      "category": "Governance & Program Management",
+      "options": [
+        {
+          "option": "No formal information security policies exist",
+          "risk": "Without documented policies, there is no formal direction or accountability for security practices, increasing non-compliance.",
+          "points": 0
+        },
+        {
+          "option": "Draft policies exist but not formally approved",
+          "risk": "Unapproved drafts are unenforceable and may conflict with legal or contractual obligations.",
+          "points": 17
+        },
+        {
+          "option": "Approved policies exist; last review was over 24 months ago",
+          "risk": "Outdated policies reference obsolete controls and miss emerging threats.",
+          "points": 33
+        },
+        {
+          "option": "Approved policies exist; last review within the last 12–24 months",
+          "risk": "Infrequent reviews can miss organizational or regulatory changes, causing drift.",
+          "points": 50
+        },
+        {
+          "option": "Approved policies exist; reviewed and approved within the last 12 months",
+          "risk": "Annual approval strengthens governance but may lack traceable integrity without versioning.",
+          "points": 67
+        },
+        {
+          "option": "Approved policies exist; reviewed within the last 12 months and version control is maintained",
+          "risk": "Version control improves auditability; unclear ownership can delay critical updates.",
+          "points": 83
+        },
+        {
+          "option": "Approved policies exist; reviewed within the last 12 months with documented evidence and senior management sign-off",
+          "risk": "Strong governance minimizes policy risk; adherence still requires verification.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "governance_program_management_q2",
+      "text": "Are policies and standards communicated to all employees and contractors?",
+      "category": "Governance & Program Management",
+      "options": [
+        {
+          "option": "No formal information security policies exist",
+          "risk": "Without documented policies, there is no formal direction or accountability for security practices, increasing non-compliance.",
+          "points": 0
+        },
+        {
+          "option": "Approved policies exist; reviewed within the last 12 months and version control is maintained",
+          "risk": "Version control improves auditability; unclear ownership can delay critical updates.",
+          "points": 0
+        },
+        {
+          "option": "Draft policies exist but not formally approved",
+          "risk": "Unapproved drafts are unenforceable and may conflict with legal or contractual obligations.",
+          "points": 25
+        },
+        {
+          "option": "Approved policies exist; reviewed within the last 12 months with documented evidence and senior management sign-off",
+          "risk": "Strong governance minimizes policy risk; adherence still requires verification.",
+          "points": 33
+        },
+        {
+          "option": "Approved policies exist; last review was over 24 months ago",
+          "risk": "Outdated policies reference obsolete controls and miss emerging threats.",
+          "points": 50
+        },
+        {
+          "option": "Approved policies exist; last review within the last 12–24 months",
+          "risk": "Infrequent reviews can miss organizational or regulatory changes, causing drift.",
+          "points": 75
+        },
+        {
+          "option": "Approved policies exist; reviewed and approved within the last 12 months",
+          "risk": "Annual approval strengthens governance but may lack traceable integrity without versioning.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "governance_program_management_q3",
+      "text": "Do you maintain an inventory of information systems, applications, and assets?",
+      "category": "Governance & Program Management",
+      "options": [
+        {
+          "option": "Partial inventory not covering all systems or apps",
+          "risk": "Partial visibility leaves untracked assets unmanaged and exploitable.",
+          "points": 0
+        },
+        {
+          "option": "Centralized inventory for endpoints, servers, and major applications",
+          "risk": "Centralization improves oversight; stale data still hinders response and lifecycle tasks.",
+          "points": 33
+        },
+        {
+          "option": "No asset inventory exists",
+          "risk": "Without an inventory, unknown assets cannot be secured, patched, or monitored.",
+          "points": 67
+        },
+        {
+          "option": "Automated, reconciled inventory across endpoints, servers, network, cloud, and SaaS",
+          "risk": "Automation minimizes unknown assets; ownership must still be enforced.",
+          "points": 67
+        },
+        {
+          "option": "Manual, ad hoc inventory",
+          "risk": "Manual lists are error-prone and quickly outdated.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "governance_program_management_q4",
+      "text": "Is there a designated individual or committee accountable for the security program?",
+      "category": "Governance & Program Management",
+      "options": [
+        {
+          "option": "Responsibilities are informally assigned but not documented",
+          "risk": "Informal assignments create ambiguity and gaps in critical tasks.",
+          "points": 0
+        },
+        {
+          "option": "A designated individual is accountable but lacks authority or resources",
+          "risk": "Insufficient authority or resources undermines enforcement of controls.",
+          "points": 25
+        },
+        {
+          "option": "A security leader (e.g., CISO/vCISO) oversees the program with defined responsibilities",
+          "risk": "A defined leader improves accountability; cross-functional gaps may remain.",
+          "points": 50
+        },
+        {
+          "option": "A leader and governance committee manage the program with charters, KPIs, and executive oversight",
+          "risk": "Governance structures reduce risk; sponsorship and funding must be sustained.",
+          "points": 75
+        },
+        {
+          "option": "No individual or committee is accountable for the security program",
+          "risk": "Without an accountable owner, risks go unmanaged and response is uncoordinated.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "risk_management_q9",
+      "text": "Do you maintain a risk register that tracks identified risks and mitigation actions?",
+      "category": "Risk Management",
+      "options": [
+        {
+          "option": "Informal tracking without owners or due dates",
+          "risk": "Informal tracking loses accountability and timeliness.",
+          "points": 0
+        },
+        {
+          "option": "Register integrated with governance reporting driving prioritization and funding",
+          "risk": "Governance-linked registers drive remediation; acceptance criteria must be clear.",
+          "points": 0
+        },
+        {
+          "option": "Register exists with owners/status but irregular updates",
+          "risk": "Irregular updates obscure current exposure and progress.",
+          "points": 50
+        },
+        {
+          "option": "No risk register maintained",
+          "risk": "Without a register, risks are unmanaged and forgotten.",
+          "points": 100
+        },
+        {
+          "option": "Maintained register with owners, due dates, treatment plans, and review cadence",
+          "risk": "Maintained registers improve transparency; integration may still be weak.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "access_control_q14",
+      "text": "Is MFA used in your organization?",
+      "category": "Access Control",
+      "options": [
+        {
+          "option": "MFA is enforced for all privileged/remote access and high-risk apps with conditional access",
+          "risk": "Broad MFA with conditional access reduces compromise risk; exceptions must be managed.",
+          "points": 0
+        },
+        {
+          "option": "MFA is not enforced for privileged or remote access",
+          "risk": "Without MFA, credential compromise can lead to immediate unauthorized access.",
+          "points": 33
+        },
+        {
+          "option": "MFA is enforced for remote access only",
+          "risk": "Remote-only MFA leaves privileged lateral movement exposed internally.",
+          "points": 67
+        },
+        {
+          "option": "MFA is enforced for privileged accounts and remote access",
+          "risk": "MFA for privileged and remote reduces takeover risk; high-risk apps may remain exposed.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "access_control_q15",
+      "text": "Are accounts provisioned and deprovisioned according to a documented workflow?",
+      "category": "Access Control",
+      "options": [
+        {
+          "option": "Automated workflow via HRIS/IdP integration with logged access changes",
+          "risk": "Automation shrinks exposure windows and improves audit trails; failures must be monitored.",
+          "points": 0
+        },
+        {
+          "option": "Accounts are created/removed without a documented workflow",
+          "risk": "Undocumented processes cause orphaned accounts and excessive access.",
+          "points": 33
+        },
+        {
+          "option": "Documented workflow exists but is inconsistently followed",
+          "risk": "Inconsistent execution delays removals and leaves stale access.",
+          "points": 67
+        },
+        {
+          "option": "Documented workflow with approvals and checklists for provisioning/deprovisioning",
+          "risk": "Documented workflows reduce errors; manual steps can lag.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "access_control_q16",
+      "text": "Do you review user access rights at least annually?",
+      "category": "Access Control",
+      "options": [
+        {
+          "option": "Quarterly reviews for all systems tied to role changes and regulated needs",
+          "risk": "Comprehensive reviews limit abuse risk; sustained effort required.",
+          "points": 0
+        },
+        {
+          "option": "User access rights are not reviewed periodically",
+          "risk": "Without reviews, excessive or stale access persists unnoticed.",
+          "points": 33
+        },
+        {
+          "option": "Access reviews ad hoc or annually for key systems",
+          "risk": "Limited reviews miss toxic combinations and least-privilege gaps.",
+          "points": 67
+        },
+        {
+          "option": "Quarterly reviews for key systems with remediation tracking",
+          "risk": "Quarterly reviews reduce privilege creep; scope gaps may remain.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "access_control_q18",
+      "text": "Are privileged sessions logged and monitored?",
+      "category": "Access Control",
+      "options": [
+        {
+          "option": "Logs are reviewed with alerts",
+          "risk": "Reviews with alerts improve detection; fast attacks may still evade.",
+          "points": 0
+        },
+        {
+          "option": "Privileged sessions are not logged or monitored",
+          "risk": "Lack of monitoring hides misuse and lateral movement.",
+          "points": 50
+        },
+        {
+          "option": "Real-time monitoring and session recording for critical systems",
+          "risk": "Real-time monitoring enhances response and forensics; storage/privacy must be managed.",
+          "points": 50
+        },
+        {
+          "option": "Privileged sessions are logged but not reviewed",
+          "risk": "Unreviewed logs provide weak deterrence and delayed detection.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "system_data_protection_q22",
+      "text": "Are endpoints protected with centrally managed anti-malware/EDR?",
+      "category": "System & Data Protection",
+      "options": [
+        {
+          "option": "Legacy AV on some endpoints",
+          "risk": "Legacy AV misses modern techniques, allowing dwell time and exfiltration.",
+          "points": 0
+        },
+        {
+          "option": "EDR on all workstations",
+          "risk": "Workstation EDR reduces user-driven compromise; servers may remain targets.",
+          "points": 33
+        },
+        {
+          "option": "EDR on all endpoints including servers with MDR/SOC monitoring",
+          "risk": "Comprehensive EDR with MDR cuts detection time; tuning gaps may persist.",
+          "points": 67
+        },
+        {
+          "option": "No centrally managed anti-malware/EDR",
+          "risk": "Without endpoint protection, malware and ransomware can spread rapidly.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "system_data_protection_q23",
+      "text": "Are systems regularly patched and updated according to a defined schedule?",
+      "category": "System & Data Protection",
+      "options": [
+        {
+          "option": "Monthly for workstations; servers ad hoc",
+          "risk": "Inconsistent cadence creates uneven exposure across systems.",
+          "points": 0
+        },
+        {
+          "option": "Defined SLAs for all systems with maintenance windows",
+          "risk": "SLAs reduce exposure windows; exceptions must be tracked.",
+          "points": 50
+        },
+        {
+          "option": "Patching is ad hoc with no defined SLAs",
+          "risk": "Ad hoc patching leaves known vulnerabilities exploitable.",
+          "points": 100
+        },
+        {
+          "option": "Risk-based patching with rapid remediation and compliance reporting",
+          "risk": "Risk-based patching minimizes high-impact exposure; disruptions must be managed.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "system_data_protection_q24",
+      "text": "Do you use secure baseline configurations for servers, endpoints, and cloud environments?",
+      "category": "System & Data Protection",
+      "options": [
+        {
+          "option": "No secure baseline configurations used",
+          "risk": "Without baselines, configurations are inconsistent and insecure.",
+          "points": 0
+        },
+        {
+          "option": "Baselines for servers, endpoints, and cloud with enforced compliance and drift remediation",
+          "risk": "Enforced baselines limit misconfigurations; exceptions must be justified.",
+          "points": 0
+        },
+        {
+          "option": "Baselines for a subset of systems",
+          "risk": "Partial baselines leave exploitable gaps.",
+          "points": 50
+        },
+        {
+          "option": "Baselines for servers and endpoints with periodic review",
+          "risk": "Periodic reviews improve consistency; enforcement gaps allow drift.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "system_data_protection_q25",
+      "text": "Are backups encrypted and stored in a separate, secured environment?",
+      "category": "System & Data Protection",
+      "options": [
+        {
+          "option": "Backups are encrypted and stored in a separate secured environment",
+          "risk": "Separate, encrypted storage improves resilience; admin path risks remain.",
+          "points": 0
+        },
+        {
+          "option": "Backups are not encrypted or are stored with production",
+          "risk": "Unencrypted or co-resident backups enable data theft and ransomware impact.",
+          "points": 50
+        },
+        {
+          "option": "Backups are encrypted, immutable/offline, with segregated access",
+          "risk": "Immutable/offline backups resist ransomware; restores must be tested.",
+          "points": 50
+        },
+        {
+          "option": "Backups are encrypted but stored within same security domain",
+          "risk": "Same-domain storage risks simultaneous compromise.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "monitoring_incident_response_q33",
+      "text": "Do you log and monitor security events from critical systems?",
+      "category": "Monitoring & Incident Response",
+      "options": [
+        {
+          "option": "Logs centralized broadly with parsing and normalization",
+          "risk": "Broad, normalized logging improves detection; storage/cost must be managed.",
+          "points": 0
+        },
+        {
+          "option": "Security event logs are not centralized",
+          "risk": "Decentralized logs impede detection and forensics.",
+          "points": 67
+        },
+        {
+          "option": "Logs centralized for a subset of sources",
+          "risk": "Partial centralization leaves blind spots.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "monitoring_incident_response_q35",
+      "text": "Are alerts from detection tools actively triaged and investigated?",
+      "category": "Monitoring & Incident Response",
+      "options": [
+        {
+          "option": "Risk-based alerts tuned with runbooks and escalation",
+          "risk": "Tuned, risk-based alerts speed response; maintenance is required to avoid drift.",
+          "points": 0
+        },
+        {
+          "option": "No defined thresholds or alerts for suspicious activity",
+          "risk": "Without alerts, suspicious activity goes unnoticed until damage occurs.",
+          "points": 50
+        },
+        {
+          "option": "Basic alerts for common events",
+          "risk": "Basic alerts catch common issues but can cause noise and fatigue.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "monitoring_incident_response_q36",
+      "text": "Is there a documented Incident Response Plan (IRP)?",
+      "category": "Monitoring & Incident Response",
+      "options": [
+        {
+          "option": "Approved IRP reviewed at least annually",
+          "risk": "Reviewed IRP improves readiness; effectiveness depends on training and exercises.",
+          "points": 0
+        },
+        {
+          "option": "No documented Incident Response Plan (IRP)",
+          "risk": "Without an IRP, response is ad hoc, slow, and error-prone.",
+          "points": 50
+        },
+        {
+          "option": "Draft IRP not approved or maintained",
+          "risk": "Unapproved or stale IRP undermines coordination during crises.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "monitoring_incident_response_q38",
+      "text": "Are incident response exercises (tabletop or live) conducted annually?",
+      "category": "Monitoring & Incident Response",
+      "options": [
+        {
+          "option": "Annual incident response exercises with tracked action items",
+          "risk": "Annual exercises with tracked actions improve readiness; live-play may be needed.",
+          "points": 0
+        },
+        {
+          "option": "No incident response exercises conducted",
+          "risk": "Without exercises, teams are unprepared and roles unclear.",
+          "points": 75
+        },
+        {
+          "option": "Tabletop exercises conducted less than annually",
+          "risk": "Infrequent exercises allow process drift and skill atrophy.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "awareness_training_q41",
+      "text": "Do employees receive security awareness training at least annually?",
+      "category": "Awareness & Training",
+      "options": [
+        {
+          "option": "Training less than annually or only at onboarding",
+          "risk": "Infrequent training leaves users unaware of evolving threats.",
+          "points": 0
+        },
+        {
+          "option": "Annual training with completion tracking",
+          "risk": "Annual tracked training raises awareness; reinforcement may still be needed.",
+          "points": 50
+        },
+        {
+          "option": "No security awareness training provided",
+          "risk": "Lack of training increases human error and social engineering risk.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "vendor_third_party_management_q45",
+      "text": "Do you assess vendor security controls before onboarding?",
+      "category": "Vendor & Third-Party Management",
+      "options": [
+        {
+          "option": "No regular reporting to executive leadership or board",
+          "risk": "Lack of reporting limits oversight and deprioritizes security investment.",
+          "points": 0
+        },
+        {
+          "option": "Informal updates or post-incident reporting only",
+          "risk": "Informal updates hinder accountability and timely decisions.",
+          "points": 25
+        },
+        {
+          "option": "Periodic activity-focused reports (not risk/outcomes)",
+          "risk": "Activity-heavy reports obscure true risk and priorities.",
+          "points": 50
+        },
+        {
+          "option": "Regular reporting of key risks, metrics, and remediation status",
+          "risk": "Risk/metric-focused reporting enables decisions; actions still must be driven.",
+          "points": 75
+        },
+        {
+          "option": "Reporting aligned to risk appetite with explicit decision requests",
+          "risk": "Risk appetite alignment accelerates resourcing; deferral still creates exposure.",
+          "points": 100
+        }
+      ]
+    },
+    {
+      "id": "vendor_third_party_management_q47",
+      "text": "Do contracts include data protection and confidentiality obligations?",
+      "category": "Vendor & Third-Party Management",
+      "options": [
+        {
+          "option": "Contracts include data protection, breach notification, and security control obligations aligned to risk",
+          "risk": "Risk-aligned clauses improve enforceability; monitoring remains necessary.",
+          "points": 0
+        },
+        {
+          "option": "Contracts lack data protection or confidentiality obligations",
+          "risk": "Weak contracts reduce leverage to enforce security with vendors.",
+          "points": 75
+        },
+        {
+          "option": "Contracts include basic confidentiality clauses",
+          "risk": "Basic confidentiality lacks concrete security requirements.",
+          "points": 100
+        }
+      ]
+    }
+  ]
+}
