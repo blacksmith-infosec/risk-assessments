@@ -6,6 +6,6 @@ export default defineConfig({
       reporter: ['html', 'json', 'lcov', 'text'],
     },
     environment: 'jsdom',
-    include: ['src/**/*.{test,spec}.ts']
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   }
 });

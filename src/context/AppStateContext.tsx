@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import questionsData from '../data/questions.json';
-import { Question, RawQuestion } from '../types/questions';
+import { Question, RawOption, RawQuestion } from '../types/questions';
 import { computeScore, ScoreResult } from '../utils/scoring';
 import { mapRisks } from '../utils/recommendations';
 import { runDomainAssessment, DomainScanResult } from '../utils/domainChecks';
@@ -14,6 +14,7 @@ interface AppStateContextValue {
   questions: Question[];
   answers: Record<string, string>;
   setAnswer: (id: string, value: string) => void;
+  resetAnswers: () => void;
   score: ScoreResult;
   risks: string[];
   domainScan?: DomainScanResult;
@@ -52,18 +53,20 @@ const persist = (key: string, value: any) => {
 
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [questions] = useState<Question[]>(() => {
-    const raw = (questionsData as unknown as { questions: RawQuestion[] }).questions;
+    const raw = (questionsData as { questions: RawQuestion[] }).questions;
     return raw.map((q) => ({
       id: q.id,
       text: q.text,
       category: q.category,
       recommendationMap: q.recommendationMap,
-      options: (q.options || []).map((o) => ({
-        label: o.option || '',
-        value: o.option || '',
-        risk: o.risk || '',
-        points: o.points ?? 0
-      }))
+      options: (q.options || [])
+        .sort((a: RawOption, b: RawOption) => ((a?.points || 0) - (b?.points || 0)))
+        .map((o) => ({
+          label: o.option || '',
+          value: o.option || '',
+          risk: o.risk || '',
+          points: o.points ?? 0
+        }))
     }));
   });
 
@@ -95,6 +98,12 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       amplitude.logEvent('answer_set', { id, value });
       return updated;
     });
+  };
+
+  const resetAnswers = () => {
+    setAnswers({});
+    persist(ANSWERS_KEY, {});
+    amplitude.logEvent('answers_reset');
   };
 
   const score = useMemo(() => computeScore(answers, questions), [answers, questions]);
@@ -141,6 +150,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         questions,
         answers,
         setAnswer,
+        resetAnswers,
         score,
         risks,
         domainScan,

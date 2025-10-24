@@ -90,28 +90,28 @@
       "category": "Governance & Program Management",
       "options": [
         {
-          "option": "Partial inventory not covering all systems or apps",
-          "risk": "Partial visibility leaves untracked assets unmanaged and exploitable.",
-          "points": 0
-        },
-        {
-          "option": "Centralized inventory for endpoints, servers, and major applications",
-          "risk": "Centralization improves oversight; stale data still hinders response and lifecycle tasks.",
-          "points": 33
-        },
-        {
           "option": "No asset inventory exists",
           "risk": "Without an inventory, unknown assets cannot be secured, patched, or monitored.",
-          "points": 67
-        },
-        {
-          "option": "Automated, reconciled inventory across endpoints, servers, network, cloud, and SaaS",
-          "risk": "Automation minimizes unknown assets; ownership must still be enforced.",
-          "points": 67
+          "points": 0
         },
         {
           "option": "Manual, ad hoc inventory",
           "risk": "Manual lists are error-prone and quickly outdated.",
+          "points": 33
+        },
+        {
+          "option": "Partial inventory not covering all systems or apps",
+          "risk": "Partial visibility leaves untracked assets unmanaged and exploitable.",
+          "points": 33
+        },
+        {
+          "option": "Centralized inventory for endpoints, servers, and major applications",
+          "risk": "Centralization improves oversight; stale data still hinders response and lifecycle tasks.",
+          "points": 66
+        },
+        {
+          "option": "Automated, reconciled inventory across endpoints, servers, network, cloud, and SaaS",
+          "risk": "Automation minimizes unknown assets; ownership must still be enforced.",
           "points": 100
         }
       ]
@@ -122,28 +122,28 @@
       "category": "Governance & Program Management",
       "options": [
         {
+          "option": "No individual or committee is accountable for the security program",
+          "risk": "Without an accountable owner, risks go unmanaged and response is uncoordinated.",
+          "points": 0
+        },
+        {
           "option": "Responsibilities are informally assigned but not documented",
           "risk": "Informal assignments create ambiguity and gaps in critical tasks.",
-          "points": 0
+          "points": 25
         },
         {
           "option": "A designated individual is accountable but lacks authority or resources",
           "risk": "Insufficient authority or resources undermines enforcement of controls.",
-          "points": 25
+          "points": 50
         },
         {
           "option": "A security leader (e.g., CISO/vCISO) oversees the program with defined responsibilities",
           "risk": "A defined leader improves accountability; cross-functional gaps may remain.",
-          "points": 50
+          "points": 75
         },
         {
           "option": "A leader and governance committee manage the program with charters, KPIs, and executive oversight",
           "risk": "Governance structures reduce risk; sponsorship and funding must be sustained.",
-          "points": 75
-        },
-        {
-          "option": "No individual or committee is accountable for the security program",
-          "risk": "Without an accountable owner, risks go unmanaged and response is uncoordinated.",
           "points": 100
         }
       ]
@@ -154,13 +154,13 @@
       "category": "Risk Management",
       "options": [
         {
-          "option": "Informal tracking without owners or due dates",
-          "risk": "Informal tracking loses accountability and timeliness.",
+          "option": "No risk register maintained",
+          "risk": "Without a register, risks are unmanaged and forgotten.",
           "points": 0
         },
         {
-          "option": "Register integrated with governance reporting driving prioritization and funding",
-          "risk": "Governance-linked registers drive remediation; acceptance criteria must be clear.",
+          "option": "Informal tracking without owners or due dates",
+          "risk": "Informal tracking loses accountability and timeliness.",
           "points": 0
         },
         {
@@ -169,13 +169,13 @@
           "points": 50
         },
         {
-          "option": "No risk register maintained",
-          "risk": "Without a register, risks are unmanaged and forgotten.",
+          "option": "Maintained register with owners, due dates, treatment plans, and review cadence",
+          "risk": "Maintained registers improve transparency; integration may still be weak.",
           "points": 100
         },
         {
-          "option": "Maintained register with owners, due dates, treatment plans, and review cadence",
-          "risk": "Maintained registers improve transparency; integration may still be weak.",
+          "option": "Register integrated with governance reporting driving prioritization and funding",
+          "risk": "Governance-linked registers drive remediation; acceptance criteria must be clear.",
           "points": 100
         }
       ]
@@ -186,23 +186,23 @@
       "category": "Access Control",
       "options": [
         {
-          "option": "MFA is enforced for all privileged/remote access and high-risk apps with conditional access",
-          "risk": "Broad MFA with conditional access reduces compromise risk; exceptions must be managed.",
-          "points": 0
-        },
-        {
           "option": "MFA is not enforced for privileged or remote access",
           "risk": "Without MFA, credential compromise can lead to immediate unauthorized access.",
-          "points": 33
+          "points": 0
         },
         {
           "option": "MFA is enforced for remote access only",
           "risk": "Remote-only MFA leaves privileged lateral movement exposed internally.",
-          "points": 67
+          "points": 33
         },
         {
           "option": "MFA is enforced for privileged accounts and remote access",
           "risk": "MFA for privileged and remote reduces takeover risk; high-risk apps may remain exposed.",
+          "points": 67
+        },
+        {
+          "option": "MFA is enforced for all privileged/remote access and high-risk apps with conditional access",
+          "risk": "Broad MFA with conditional access reduces compromise risk; exceptions must be managed.",
           "points": 100
         }
       ]

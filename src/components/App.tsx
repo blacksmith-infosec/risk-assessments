@@ -15,7 +15,12 @@ const App = () => {
   // Dark mode state and persistence
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        return savedTheme === 'dark';
+      }
+      // Default to light mode on first visit
+      return false;
     }
     return false;
   });

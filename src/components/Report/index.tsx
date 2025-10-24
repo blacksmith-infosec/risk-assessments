@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useAppState } from '../../context/AppStateContext';
+import CategoryRadarChart from '../CategoryRadarChart';
 
 const Report: React.FC = () => {
   const { score, risks, domainScan, exportJSON } = useAppState();
@@ -13,22 +14,55 @@ const Report: React.FC = () => {
     a.click();
   };
 
+  // Determine color based on score
+  const getScoreColor = (percent: number) => {
+    if (percent >= 80) return 'score-excellent';
+    if (percent >= 60) return 'score-good';
+    if (percent >= 40) return 'score-fair';
+    return 'score-poor';
+  };
+
   return (
-    <div className='panel'>
-      <h2>Risk Report</h2>
+    <div className='panel report-panel'>
+      <h2>Security Risk Report</h2>
       <div className='export-actions'>
         <button onClick={onExportJSON}>Export JSON</button>
       </div>
       <div ref={reportRef} className='report-content'>
-        <section>
-          <h3>Overall Score</h3>
-          <p><strong>{score.percent}%</strong> ({score.total}/{score.max} points)</p>
-          <ul>
-            {score.categories.map((c) => (
-              <li key={c.category}>{c.category}: {c.percent}% ({c.total}/{c.max})</li>
-            ))}
-          </ul>
+        <section className='report-score-section'>
+          <h3>Overall Security Score</h3>
+          <div className={`report-score-display ${getScoreColor(score.percent)}`}>
+            <div className='report-score-value'>{score.percent}%</div>
+            <div className='report-score-label'>
+              {score.percent >= 80 ? 'Excellent Security Posture' :
+               score.percent >= 60 ? 'Good Security Posture' :
+               score.percent >= 40 ? 'Fair - Improvements Needed' : 'Critical - Immediate Action Required'}
+            </div>
+          </div>
         </section>
+
+        <section className='report-categories-section'>
+          <h3>Category Analysis</h3>
+          <CategoryRadarChart categories={score.categories} />
+
+          <div className='category-details'>
+            {score.categories.map((c) => (
+              <div key={c.category} className='category-detail-card'>
+                <div className='category-detail-header'>
+                  <span className='category-name'>{c.category}</span>
+                  <span className={`category-score ${getScoreColor(c.percent)}`}>{c.percent}%</span>
+                </div>
+                <div className='category-progress-bar'>
+                  <div
+                    className={`category-progress-fill ${getScoreColor(c.percent)}`}
+                    data-width={c.percent}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {domainScan && (
           <section>
             <h3>Domain Findings ({domainScan.domain})</h3>
@@ -38,7 +72,7 @@ const Report: React.FC = () => {
           </section>
         )}
         <section>
-          <h3>Risks</h3>
+          <h3>Identified Risks</h3>
           {risks.length === 0 && <p>No risks yet. Complete questionnaire or run domain scan.</p>}
           <ul className='risks'>
             {risks.map((r) => (
