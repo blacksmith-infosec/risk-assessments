@@ -1,6 +1,6 @@
 {
   "name": "blacksmith-free-risk-assessment-tool",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A free risk assessment tool for MSPs to evaluate their client's and prospect's security posture.",
   "type": "module",
   "scripts": {

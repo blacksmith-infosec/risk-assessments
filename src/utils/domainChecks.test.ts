@@ -6,7 +6,6 @@ import {
   fetchDMARC,
   checkDKIM,
   fetchCertificates,
-  attemptSecurityHeaders,
   deriveIssues,
   runDomainAssessment,
 } from './domainChecks';
@@ -262,47 +261,6 @@ describe('fetchCertificates', () => {
   });
 });
 
-describe('attemptSecurityHeaders', () => {
-  it('should return fetched headers when available', async () => {
-    const mockHeaders = new Map([
-      ['strict-transport-security', 'max-age=31536000'],
-      ['content-security-policy', 'default-src \'self\''],
-    ]);
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      headers: {
-        get: (name: string) => mockHeaders.get(name) || null,
-      },
-    });
-
-    const result = await attemptSecurityHeaders('example.com');
-    expect(result.status).toBe('fetched');
-    expect(result.headers).toEqual({
-      'strict-transport-security': 'max-age=31536000',
-      'content-security-policy': 'default-src \'self\'',
-    });
-  });
-
-  it('should return unavailable when no headers found', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      headers: {
-        get: () => null,
-      },
-    });
-
-    const result = await attemptSecurityHeaders('example.com');
-    expect(result.status).toBe('unavailable');
-    expect(result.note).toContain('CORS');
-  });
-
-  it('should return unavailable on fetch error', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('CORS error'));
-
-    const result = await attemptSecurityHeaders('example.com');
-    expect(result.status).toBe('unavailable');
-    expect(result.note).toContain('CORS');
-  });
-});
-
 describe('deriveIssues', () => {
   it('should detect missing SPF', () => {
     const scan = { spf: undefined, dmarc: 'v=DMARC1', dkimSelectorsFound: ['default'] };
@@ -322,46 +280,11 @@ describe('deriveIssues', () => {
     expect(issues).toContain('No DKIM selectors detected (heuristic)');
   });
 
-  it('should detect missing security headers', () => {
-    const scan = {
-      spf: 'v=spf1',
-      dmarc: 'v=DMARC1',
-      dkimSelectorsFound: ['default'],
-      securityHeaders: {
-        status: 'fetched' as const,
-        headers: {},
-      },
-    };
-    const issues = deriveIssues(scan);
-    expect(issues).toContain('Header likely missing: strict-transport-security');
-    expect(issues).toContain('Header likely missing: content-security-policy');
-    expect(issues).toContain('Header likely missing: x-frame-options');
-  });
-
-  it('should report when headers not validated', () => {
-    const scan = {
-      spf: 'v=spf1',
-      dmarc: 'v=DMARC1',
-      dkimSelectorsFound: ['default'],
-      securityHeaders: { status: 'unavailable' as const },
-    };
-    const issues = deriveIssues(scan);
-    expect(issues).toContain('Security headers not validated client-side');
-  });
-
   it('should return empty array when all checks pass', () => {
     const scan = {
       spf: 'v=spf1',
       dmarc: 'v=DMARC1',
       dkimSelectorsFound: ['default'],
-      securityHeaders: {
-        status: 'fetched' as const,
-        headers: {
-          'strict-transport-security': 'max-age=31536000',
-          'content-security-policy': 'default-src \'self\'',
-          'x-frame-options': 'DENY',
-        },
-      },
     };
     const issues = deriveIssues(scan);
     expect(issues).toHaveLength(0);
@@ -423,7 +346,6 @@ describe('runDomainAssessment', () => {
     expect(result.dmarc).toBe('v=DMARC1; p=reject');
     expect(result.dkimSelectorsFound).toEqual([]);
     expect(result.certificates).toBeDefined();
-    expect(result.securityHeaders).toBeDefined();
     expect(result.issues).toBeDefined();
   });
 

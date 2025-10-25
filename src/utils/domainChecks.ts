@@ -15,7 +15,6 @@ export interface DomainScanResult {
   dkimSelectorsFound: string[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   certificates?: any[]; // Raw crt.sh JSON rows
-  securityHeaders?: { status: 'unavailable' | 'fetched'; headers?: Record<string, string>; note?: string };
   issues: string[]; // Derived issue strings
 }
 
@@ -70,54 +69,11 @@ export const fetchCertificates = async (domain: string): Promise<any[] | undefin
   }
 };
 
-export const attemptSecurityHeaders = async (
-  domain: string
-): Promise<{
-  status: 'unavailable' | 'fetched';
-  headers?: Record<string, string>;
-  note?: string;
-}> => {
-  try {
-    const res = await fetch(`https://${domain}`, { method: 'HEAD' });
-    const headerNames = [
-      'content-security-policy',
-      'strict-transport-security',
-      'x-frame-options',
-      'x-content-type-options',
-      'referrer-policy',
-      'permissions-policy',
-    ];
-    const headers: Record<string, string> = {};
-    for (const h of headerNames) {
-      const v = res.headers.get(h);
-      if (v) headers[h] = v;
-    }
-    if (Object.keys(headers).length === 0) {
-      return {
-        status: 'unavailable',
-        note: 'Direct header inspection limited by CORS. Use https://securityheaders.com/?q=' + domain
-      };
-    }
-    return { status: 'fetched', headers };
-  } catch {
-    return { status: 'unavailable', note: 'Unable to fetch headers (likely CORS). Use securityheaders.com.' };
-  }
-};
-
 export const deriveIssues = (scan: Partial<DomainScanResult>): string[] => {
   const issues: string[] = [];
   if (scan.spf === undefined) issues.push('Missing SPF record');
   if (scan.dmarc === undefined) issues.push('Missing DMARC record');
   if ((scan.dkimSelectorsFound || []).length === 0) issues.push('No DKIM selectors detected (heuristic)');
-  const h = scan.securityHeaders;
-  if (h?.status === 'fetched') {
-    const required = ['strict-transport-security', 'content-security-policy', 'x-frame-options'];
-    for (const r of required) {
-      if (!h.headers || !h.headers[r]) issues.push(`Header likely missing: ${r}`);
-    }
-  } else {
-    issues.push('Security headers not validated client-side');
-  }
   return issues;
 };
 
@@ -134,7 +90,6 @@ export const runDomainAssessment = async (domain: string): Promise<DomainScanRes
   const dmarc = await fetchDMARC(trimmed);
   const dkimSelectorsFound = await checkDKIM(trimmed);
   const certificates = await fetchCertificates(trimmed);
-  const securityHeaders = await attemptSecurityHeaders(trimmed);
   const partial: Partial<DomainScanResult> = {
     domain: trimmed,
     timestamp: new Date().toISOString(),
@@ -143,7 +98,6 @@ export const runDomainAssessment = async (domain: string): Promise<DomainScanRes
     dmarc,
     dkimSelectorsFound,
     certificates,
-    securityHeaders
   };
   const issues = deriveIssues(partial);
   return { ...(partial as DomainScanResult), issues };

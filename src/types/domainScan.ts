@@ -39,3 +39,11 @@ export interface DomainScanAggregate {
   // Combined issues across all scanners.
   issues: string[];
 }
+
+export type SeverityLevel = 'success' | 'info' | 'warning' | 'critical' | 'error';
+
+export interface ScannerInterpretation {
+  severity: SeverityLevel;
+  message: string;
+  recommendation: string;
+}

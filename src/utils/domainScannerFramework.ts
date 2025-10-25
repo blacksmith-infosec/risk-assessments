@@ -7,15 +7,154 @@
 // 4. UI auto-renders scanner with status; no additional wiring needed.
 // 5. Optionally add deriveIssues if issues not computed within run.
 
-import { DomainScanner, ExecutedScannerResult, DomainScanAggregate } from '../types/domainScan';
+import { DomainScanner, ExecutedScannerResult, DomainScanAggregate, ScannerInterpretation } from '../types/domainScan';
 import {
   fetchDNS,
   extractSPF,
   fetchDMARC,
   checkDKIM,
   fetchCertificates,
-  attemptSecurityHeaders
 } from './domainChecks';
+
+// Default timeout for each scanner (30 seconds)
+const DEFAULT_SCANNER_TIMEOUT = 30000;
+
+// Utility to run a promise with timeout
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, scannerLabel: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${scannerLabel} timed out after ${timeoutMs}ms`)), timeoutMs)
+    )
+  ]);
+};
+
+// Interpret scanner results to provide user-friendly status and recommendations
+export const interpretScannerResult = (scanner: ExecutedScannerResult): ScannerInterpretation => {
+  if (scanner.status === 'error') {
+    return {
+      severity: 'error',
+      message: scanner.error || 'Scanner failed to execute',
+      recommendation: 'This check could not be completed. Please try again or check your network connection.'
+    };
+  }
+
+  const issueCount = scanner.issues?.length || 0;
+
+  // Scanner-specific interpretations
+  switch (scanner.id) {
+    case 'dns':
+      return {
+        severity: 'success',
+        message: 'DNS records retrieved successfully',
+        recommendation: 'Your domain\'s DNS configuration is accessible and responding normally.'
+      };
+
+    case 'emailAuth': {
+      if (issueCount === 0) {
+        return {
+          severity: 'success',
+          message: 'Excellent email authentication',
+          recommendation: 'SPF, DMARC, and DKIM are all properly configured. This helps prevent email spoofing.'
+        };
+      } else if (issueCount <= 2) {
+        return {
+          severity: 'warning',
+          message: 'Email authentication needs attention',
+          recommendation: 'Configure missing email authentication records (SPF, DMARC, DKIM) ' +
+            'to prevent email spoofing and improve deliverability.'
+        };
+      } else {
+        return {
+          severity: 'critical',
+          message: 'Email authentication missing',
+          recommendation: 'Your domain lacks critical email authentication. This makes it vulnerable to spoofing. ' +
+            'Implement SPF, DMARC, and DKIM immediately.'
+        };
+      }
+    }
+
+    case 'certificates': {
+      const data = scanner.data as { certificates?: unknown[] };
+      const certCount = data?.certificates?.length || 0;
+      if (certCount > 0) {
+        return {
+          severity: 'success',
+          message: `Found ${certCount} certificate entries`,
+          recommendation: certCount > 50
+            ? 'Large number of certificates found. Review for any unexpected or expired certificates.'
+            : 'Certificate transparency logs show your domain has valid SSL certificates.'
+        };
+      }
+      return {
+        severity: 'info',
+        message: 'No certificates found',
+        recommendation: 'No SSL certificates found in public certificate transparency logs. ' +
+          'If you use HTTPS, this might indicate a very new certificate.'
+      };
+    }
+
+    case 'securityHeaders': {
+      const data = scanner.data as { status?: string; grade?: string; score?: number; testUrl?: string };
+      if (data?.status === 'unavailable') {
+        return {
+          severity: 'info',
+          message: 'Headers check unavailable',
+          recommendation: data.testUrl
+            ? `Visit ${data.testUrl} for a comprehensive security headers analysis.`
+            : 'Visit securityheaders.com for a full analysis.'
+        };
+      }
+
+      // Grade-based interpretation
+      const grade = data?.grade || 'Unknown';
+      const gradeMap: Record<string, { severity: 'success' | 'info' | 'warning' | 'critical'; message: string }> = {
+        'A+': { severity: 'success', message: 'Excellent security headers (A+)' },
+        'A': { severity: 'success', message: 'Great security headers (A)' },
+        'B': { severity: 'info', message: 'Good security headers (B)' },
+        'C': { severity: 'warning', message: 'Moderate security headers (C)' },
+        'D': { severity: 'warning', message: 'Weak security headers (D)' },
+        'E': { severity: 'critical', message: 'Poor security headers (E)' },
+        'F': { severity: 'critical', message: 'Failed security headers (F)' },
+      };
+
+      const gradeInfo = gradeMap[grade] || {
+        severity: 'info' as const,
+        message: 'Security headers analyzed'
+      };
+
+      let recommendation = '';
+      if (['A+', 'A'].includes(grade)) {
+        recommendation = 'Your site has excellent security headers protecting against common web vulnerabilities. ';
+      } else if (['B', 'C'].includes(grade)) {
+        recommendation = 'Consider strengthening your security headers. ';
+      } else if (['D', 'E', 'F'].includes(grade)) {
+        recommendation = 'Your security headers need immediate attention. ';
+      }
+
+      if (issueCount > 0) {
+        recommendation += `Missing ${issueCount} critical header(s). `;
+      }
+
+      if (data?.testUrl) {
+        recommendation += 'View detailed report at securityheaders.com';
+      }
+
+      return {
+        severity: gradeInfo.severity,
+        message: gradeInfo.message,
+        recommendation: recommendation || 'Visit securityheaders.com for detailed analysis.'
+      };
+    }
+
+    default:
+      return {
+        severity: issueCount === 0 ? 'success' : 'warning',
+        message: issueCount === 0 ? 'Check completed successfully' : `${issueCount} issue(s) found`,
+        recommendation: issueCount === 0 ? 'No issues detected.' : 'Review the issues listed above for more details.'
+      };
+  }
+};
 
 // DNS Scanner: collects common record types.
 const dnsScanner: DomainScanner = {
@@ -80,35 +219,10 @@ const certificateScanner: DomainScanner = {
   }
 };
 
-// Security headers scanner (HEAD request limited by CORS)
-const securityHeadersScanner: DomainScanner = {
-  id: 'securityHeaders',
-  label: 'Security Headers',
-  description: 'Attempts to fetch select security headers via HEAD request',
-  run: async (domain) => {
-    const securityHeaders = await attemptSecurityHeaders(domain);
-    const issues: string[] = [];
-    if (securityHeaders.status === 'fetched' && securityHeaders.headers) {
-      const required = ['strict-transport-security', 'content-security-policy', 'x-frame-options'];
-      for (const r of required) {
-        if (!securityHeaders.headers[r]) issues.push(`Header likely missing: ${r}`);
-      }
-    } else {
-      issues.push('Security headers not validated client-side');
-    }
-    return {
-      data: securityHeaders,
-      summary: securityHeaders.status === 'fetched' ? 'Headers fetched' : 'Unavailable (CORS)',
-      issues
-    };
-  }
-};
-
 export const SCANNERS: DomainScanner[] = [
   dnsScanner,
   emailAuthScanner,
   certificateScanner,
-  securityHeadersScanner
 ];
 
 // Execute all scanners sequentially (could be parallel, but sequential eases rate limits & ordering).
@@ -132,7 +246,11 @@ export const runAllScanners = async (
     results.push(base);
     onProgress?.([...results]);
     try {
-      const r = await scanner.run(trimmed);
+      const r = await withTimeout(
+        scanner.run(trimmed),
+        DEFAULT_SCANNER_TIMEOUT,
+        scanner.label
+      );
       const issues = r.issues || scanner.deriveIssues?.(r, trimmed) || [];
       Object.assign(base, r, { status: 'success', issues, finishedAt: new Date().toISOString() });
     } catch (err: unknown) {
@@ -157,7 +275,11 @@ export const runScanner = async (domain: string, scannerId: string): Promise<Exe
   if (!scanner) throw new Error('Scanner not found: ' + scannerId);
   const start = new Date().toISOString();
   try {
-    const r = await scanner.run(domain.trim().toLowerCase());
+    const r = await withTimeout(
+      scanner.run(domain.trim().toLowerCase()),
+      DEFAULT_SCANNER_TIMEOUT,
+      scanner.label
+    );
     return {
       id: scanner.id,
       label: scanner.label,

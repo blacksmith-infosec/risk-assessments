@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
-import { SCANNERS } from '../../utils/domainScannerFramework';
+import { SCANNERS, interpretScannerResult } from '../../utils/domainScannerFramework';
 
 const DomainScanner = () => {
   const { runScanners, domainScanAggregate, scannerProgress, domainScan } = useAppState();
@@ -38,21 +38,85 @@ const DomainScanner = () => {
       {error && <div className='error'>{error}</div>}
       <div className='modular-results'>
         <h3>Scanners</h3>
+        <div className='error'>More scanners are coming soon!</div>
         <ul className='scanner-list'>
           {SCANNERS.map((s) => {
             const prog = scannerProgress.find((p) => p.id === s.id);
             const status = prog?.status || 'idle';
+            const interpretation = prog ? interpretScannerResult(prog) : null;
+
+            // Status icons
+            const getStatusIcon = () => {
+              switch (status) {
+                case 'success':
+                  return '✓';
+                case 'error':
+                  return '✕';
+                case 'running':
+                  return '⟳';
+                default:
+                  return '○';
+              }
+            };
+
+            // Severity badge component
+            const renderSeverityBadge = () => {
+              if (!interpretation) return null;
+              const severityClass = `severity-badge severity-${interpretation.severity}`;
+              const severityLabel = {
+                success: '✓ Good',
+                info: 'ℹ Info',
+                warning: '⚠ Warning',
+                critical: '⚠ Critical',
+                error: '✕ Error'
+              }[interpretation.severity];
+
+              return <span className={severityClass}>{severityLabel}</span>;
+            };
+
             return (
               <li key={s.id} className={`scanner scanner-${status}`}>
-                <strong>{s.label}</strong>{' '}
-                <span className='status'>[{status}]</span>
-                <div className='desc'>{s.description}</div>
-                {prog && prog.summary && <div className='summary'>{prog.summary}</div>}
-                {prog && prog.status === 'error' && <div className='error'>Error: {prog.error}</div>}
+                <div className='scanner-header'>
+                  <div className='scanner-title'>
+                    <span className={`status-icon status-icon-${status}`}>{getStatusIcon()}</span>
+                    <strong>{s.label}</strong>
+                    {renderSeverityBadge()}
+                  </div>
+                  <span className='status-text'>{status}</span>
+                </div>
+                <div className='scanner-description'>{s.description}</div>
+                {prog && prog.summary && <div className='scanner-summary'>{prog.summary}</div>}
+
+                {interpretation && (
+                  <div className={`interpretation interpretation-${interpretation.severity}`}>
+                    <div className='interpretation-message'>{interpretation.message}</div>
+                    <div className='interpretation-recommendation'>{interpretation.recommendation}</div>
+                    {s.id === 'securityHeaders' && prog?.data &&
+                     (prog.data as { testUrl?: string }).testUrl ? (
+                      <div className='external-link'>
+                        <a
+                          href={(prog.data as { testUrl?: string }).testUrl}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='btn-link'
+                        >
+                          📊 View Full Report on SecurityHeaders.com →
+                        </a>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+
+                {prog && prog.status === 'error' && prog.error && (
+                  <div className='error-detail'>Error: {prog.error}</div>
+                )}
                 {prog && prog.issues && prog.issues.length > 0 && (
-                  <ul className='issues'>
-                    {prog.issues.map((i) => <li key={i}>{i}</li>)}
-                  </ul>
+                  <details className='issues-details'>
+                    <summary>{prog.issues.length} issue(s) detected</summary>
+                    <ul className='issues-list'>
+                      {prog.issues.map((i, idx) => <li key={idx}>{i}</li>)}
+                    </ul>
+                  </details>
                 )}
               </li>
             );
@@ -61,14 +125,18 @@ const DomainScanner = () => {
         {domainScanAggregate && (
           <div className='aggregate'>
             <h4>Aggregate Result</h4>
-            <p><em>Domain:</em> {domainScanAggregate.domain}</p>
-            <p><em>Timestamp:</em> {new Date(domainScanAggregate.timestamp).toLocaleString()}</p>
-            <h5>All Issues</h5>
+            <div className='aggregate-info'>
+              <p><strong>Domain:</strong> {domainScanAggregate.domain}</p>
+              <p><strong>Timestamp:</strong> {new Date(domainScanAggregate.timestamp).toLocaleString()}</p>
+            </div>
+            <h5>All Issues ({domainScanAggregate.issues.length})</h5>
             {domainScanAggregate.issues.length ? (
-              <ul>
-                {domainScanAggregate.issues.map((i) => <li key={i}>{i}</li>)}
+              <ul className='aggregate-issues'>
+                {domainScanAggregate.issues.map((i, idx) => <li key={idx}>{i}</li>)}
               </ul>
-            ) : <p>No issues detected.</p>}
+            ) : (
+              <p className='no-issues'>✓ No issues detected - Your domain configuration looks good!</p>
+            )}
           </div>
         )}
       </div>
