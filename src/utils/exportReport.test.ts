@@ -251,17 +251,25 @@ describe('exportReport', () => {
     let mockCreateObjectURL: ReturnType<typeof vi.fn>;
     let mockRevokeObjectURL: ReturnType<typeof vi.fn>;
     let mockClick: ReturnType<typeof vi.fn>;
-    let mockBlob: ReturnType<typeof vi.fn>;
+    let BlobConstructorSpy: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
       mockCreateObjectURL = vi.fn(() => 'mock-url');
       mockRevokeObjectURL = vi.fn();
       mockClick = vi.fn();
-      mockBlob = vi.fn((parts, options) => ({ parts, options, type: options?.type }));
+
+      // Create a mock Blob class
+      BlobConstructorSpy = vi.fn();
+      class MockBlob {
+        constructor(parts: unknown[], options?: { type?: string }) {
+          BlobConstructorSpy(parts, options);
+          return { parts, options, type: options?.type } as unknown as Blob;
+        }
+      }
 
       global.URL.createObjectURL = mockCreateObjectURL;
       global.URL.revokeObjectURL = mockRevokeObjectURL;
-      global.Blob = mockBlob as unknown as typeof Blob;
+      global.Blob = MockBlob as unknown as typeof Blob;
 
       vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
         if (tagName === 'a') {
@@ -282,7 +290,7 @@ describe('exportReport', () => {
         bestPractices: []
       });
 
-      expect(mockBlob).toHaveBeenCalledWith(
+      expect(BlobConstructorSpy).toHaveBeenCalledWith(
         expect.arrayContaining(['\ufeff', expect.any(String)]),
         { type: 'application/msword' }
       );

@@ -1,5 +1,5 @@
 export const APP_CONFIG = {
-  officialDomain: 'blacksmithinfosec.github.io',
-  amplitudeApiKey: '',
-  googleAnalyticsId: ''
+  officialDomain: 'riskassessments.blacksmithinfosec.com',
+  amplitudeApiKey: 'f5306235c825ddc7fff1fed59a034acf',
+  googleAnalyticsId: 'G-J7TCWYSKP6'
 };
