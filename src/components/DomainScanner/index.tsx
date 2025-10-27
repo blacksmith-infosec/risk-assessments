@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import { SCANNERS, interpretScannerResult } from '../../utils/domainScannerFramework';
+import { TrackedButton } from '../TrackedButton';
+import { TrackedLink } from '../TrackedLink';
+import { trackFormSubmit } from '../../utils/analytics';
 
 const DomainScanner = () => {
   const { runScanners, domainScanAggregate, scannerProgress, domainScan } = useAppState();
@@ -13,6 +16,7 @@ const DomainScanner = () => {
     setError(null);
     if (!input.trim()) { setError('Enter a domain'); return; }
     setLoading(true);
+    trackFormSubmit('domain_scan', { domain: input });
     try {
       await runScanners(input);
     } catch (err) {
@@ -33,10 +37,10 @@ const DomainScanner = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <button type='submit' disabled={loading}>
+        <TrackedButton type='submit' disabled={loading} trackingName='domain_scan_submit'>
           <span className='button-text-full'>{loading ? 'Scanning...' : 'Scan Domain'}</span>
           <span className='button-text-short'>{loading ? 'Scanning...' : 'Scan'}</span>
-        </button>
+        </TrackedButton>
       </form>
       {error && <div className='error'>{error}</div>}
       <div className='modular-results'>
@@ -97,14 +101,14 @@ const DomainScanner = () => {
                     {s.id === 'securityHeaders' && prog?.data &&
                      (prog.data as { testUrl?: string }).testUrl ? (
                       <div className='external-link'>
-                        <a
-                          href={(prog.data as { testUrl?: string }).testUrl}
+                        <TrackedLink
+                          href={(prog.data as { testUrl?: string }).testUrl!}
                           target='_blank'
                           rel='noopener noreferrer'
                           className='btn-link'
                         >
                           📊 View Full Report on SecurityHeaders.com →
-                        </a>
+                        </TrackedLink>
                       </div>
                     ) : null}
                   </div>

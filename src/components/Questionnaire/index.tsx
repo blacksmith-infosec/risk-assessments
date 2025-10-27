@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import CategoryRadarChart from '../CategoryRadarChart';
 import ConfirmDialog from '../ConfirmDialog';
+import { TrackedButton } from '../TrackedButton';
 
 const Questionnaire: React.FC = () => {
   const { questions, answers, setAnswer, resetAnswers, score } = useAppState();
@@ -34,13 +35,15 @@ const Questionnaire: React.FC = () => {
         <div className='questionnaire-header-content'>
           <h2>Security Risk Assessment</h2>
           {answeredCount > 0 && (
-            <button
+            <TrackedButton
               className='reset-btn'
+              trackingName='reset_questionnaire'
+              trackingProperties={{ answered_count: answeredCount }}
               onClick={() => setShowResetConfirm(true)}
               title='Reset all answers'
             >
               🔄 Reset
-            </button>
+            </TrackedButton>
           )}
         </div>
         <p className='questionnaire-subtitle'>

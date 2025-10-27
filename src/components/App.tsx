@@ -6,6 +6,7 @@ import DomainScanner from './DomainScanner';
 import Report from './Report';
 import ImportExport from './ImportExport';
 import { AppStateProvider } from '../context/AppStateContext';
+import { TrackedButton } from './TrackedButton';
 import '../styles.css';
 
 
@@ -41,13 +42,15 @@ const App = () => {
       <Router>
         <section className='app-panel panel'>
           <div className='toggle-row'>
-            <button
+            <TrackedButton
               className='toggle-btn'
+              trackingName='toggle_theme'
+              trackingProperties={{ mode: darkMode ? 'light' : 'dark' }}
               aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               onClick={() => setDarkMode((prev) => !prev)}
             >
               {darkMode ? '☀️ Light' : '🌙 Dark'}
-            </button>
+            </TrackedButton>
           </div>
           <nav>
             <NavLink to='/' end>Home</NavLink>

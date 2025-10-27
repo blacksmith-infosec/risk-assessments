@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
+import { TrackedButton } from '../TrackedButton';
+import { trackExport, trackImport } from '../../utils/analytics';
 
 const ImportExport = () => {
   const { importJSON, exportJSON } = useAppState();
@@ -9,6 +11,7 @@ const ImportExport = () => {
   const onImport = () => {
     const ok = importJSON(raw);
     setStatus(ok ? 'Import successful' : 'Invalid JSON');
+    trackImport('json', ok);
   };
 
   const onDownload = () => {
@@ -17,6 +20,7 @@ const ImportExport = () => {
     a.href = URL.createObjectURL(blob);
     a.download = 'risk-assessment.json';
     a.click();
+    trackExport('json');
   };
 
   return (
@@ -30,8 +34,12 @@ const ImportExport = () => {
         onChange={(e) => setRaw(e.target.value)}
       />
       <div className='actions'>
-        <button onClick={onImport}>Import JSON</button>
-        <button onClick={onDownload}>Download Current JSON</button>
+        <TrackedButton trackingName='import_json' onClick={onImport}>
+          Import JSON
+        </TrackedButton>
+        <TrackedButton trackingName='download_json' onClick={onDownload}>
+          Download Current JSON
+        </TrackedButton>
       </div>
       {status && <div className='status'>{status}</div>}
     </div>

@@ -3,6 +3,8 @@ import { useAppState } from '../../context/AppStateContext';
 import CategoryRadarChart from '../CategoryRadarChart';
 import { interpretScannerResult } from '../../utils/domainScannerFramework';
 import { exportToWord } from '../../utils/exportReport';
+import { TrackedButton } from '../TrackedButton';
+import { TrackedLink } from '../TrackedLink';
 
 const Report: React.FC = () => {
   const { score, risks, bestPractices, domainScan, domainScanAggregate, exportJSON } = useAppState();
@@ -47,9 +49,15 @@ const Report: React.FC = () => {
     <div className='panel report-panel'>
       <h2>Security Risk Report</h2>
       <div className='export-actions'>
-        <button onClick={onExportDOCX}>Export Word</button>
-        <button onClick={onExportJSON}>Export JSON</button>
-        <button onClick={printScreen}>Print</button>
+        <TrackedButton trackingName='export_word' onClick={onExportDOCX}>
+          Export Word
+        </TrackedButton>
+        <TrackedButton trackingName='export_json' onClick={onExportJSON}>
+          Export JSON
+        </TrackedButton>
+        <TrackedButton trackingName='print_report' onClick={printScreen}>
+          Print
+        </TrackedButton>
       </div>
       <div ref={reportRef} className='report-content'>
         <section className='report-score-section'>
@@ -144,13 +152,13 @@ const Report: React.FC = () => {
                     )}
                     {sc.id === 'securityHeaders' && sc.data && (sc.data as { testUrl?: string }).testUrl ? (
                       <div className='scanner-card-link'>
-                        <a
-                          href={(sc.data as { testUrl?: string }).testUrl}
+                        <TrackedLink
+                          href={(sc.data as { testUrl?: string }).testUrl!}
                           target='_blank'
                           rel='noopener noreferrer'
                         >
                           Full header analysis ↗
-                        </a>
+                        </TrackedLink>
                       </div>
                     ) : null}
                   </div>

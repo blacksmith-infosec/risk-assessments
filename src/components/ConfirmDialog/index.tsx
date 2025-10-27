@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { TrackedButton } from '../TrackedButton';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -52,16 +53,24 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <h3 id='dialog-title'>{title}</h3>
         <p>{message}</p>
         <div className='modal-actions'>
-          <button className='btn-secondary' onClick={onCancel} type='button'>
+          <TrackedButton
+            className='btn-secondary'
+            trackingName='dialog_cancel'
+            trackingProperties={{ dialog: title }}
+            onClick={onCancel}
+            type='button'
+          >
             {cancelLabel}
-          </button>
-          <button
+          </TrackedButton>
+          <TrackedButton
             className={variant === 'danger' ? 'btn-danger' : 'btn-primary'}
+            trackingName='dialog_confirm'
+            trackingProperties={{ dialog: title, variant }}
             onClick={onConfirm}
             type='button'
           >
             {confirmLabel}
-          </button>
+          </TrackedButton>
         </div>
       </div>
     </div>

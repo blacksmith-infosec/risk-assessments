@@ -9,6 +9,7 @@ import { DomainScanAggregate } from '../types/domainScan';
 import { ExecutedScannerResult } from '../types/domainScan';
 import { APP_CONFIG } from '../config/appConfig';
 import * as amplitude from '@amplitude/analytics-browser';
+import { trackEvent, trackImport } from '../utils/analytics';
 
 interface AppStateContextValue {
   questions: Question[];
@@ -98,7 +99,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setAnswers((prev) => {
       const updated = { ...prev, [id]: value };
       persist(ANSWERS_KEY, updated);
-      amplitude.logEvent('answer_set', { id, value });
+      trackEvent('answer_set', { question_id: id, value });
       return updated;
     });
   };
@@ -106,7 +107,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetAnswers = () => {
     setAnswers({});
     persist(ANSWERS_KEY, {});
-    amplitude.logEvent('answers_reset');
+    trackEvent('answers_reset');
   };
 
   const score = useMemo(() => computeScore(answers, questions), [answers, questions]);
@@ -117,7 +118,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const result = await runDomainAssessment(domain);
     setDomainScan(result);
     persist(DOMAIN_KEY, result);
-    amplitude.logEvent('domain_scanned', { domain: result.domain, issues: result.issues.length });
+    trackEvent('domain_scanned', { domain: result.domain, issues_count: result.issues.length });
   };
 
   const runScanners = async (domain: string) => {
@@ -127,7 +128,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
     setDomainScanAggregate(agg);
     persist(DOMAIN_AGG_KEY, agg);
-    amplitude.logEvent('domain_scanned_modular', { domain: agg.domain, issues: agg.issues.length });
+    trackEvent('domain_scanned_modular', { domain: agg.domain, issues_count: agg.issues.length });
   };
 
   const exportJSON = () => JSON.stringify({ answers, risks, bestPractices, domainScan, domainScanAggregate }, null, 2);
@@ -140,9 +141,10 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (obj.domainScanAggregate && typeof obj.domainScanAggregate === 'object') {
         setDomainScanAggregate(obj.domainScanAggregate);
       }
-      amplitude.logEvent('data_imported');
+      trackImport('json', true);
       return true;
     } catch {
+      trackImport('json', false);
       return false;
     }
   };

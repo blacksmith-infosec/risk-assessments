@@ -1,3 +1,5 @@
+import React from 'react';
+import { TrackedLink } from '../TrackedLink';
 
 const Home = () => (
   <section className='home-panel modern-home'>
@@ -39,21 +41,22 @@ const Home = () => (
           <span className='note-icon'>💡</span>
           <span>
             This tool is provided free of charge and without warranty by{' '}
-            <a
+            <TrackedLink
               href='https://blacksmithinfosec.com/?utm_source=risk-assessment-tool'
               target='_blank'
               rel='noopener noreferrer'
               referrerPolicy='origin'
             >
               Blacksmith InfoSec
-            </a>. Suggestions, bug reports, or feedback? Report on{' '}
-            <a
+            </TrackedLink>. Suggestions, bug reports, or feedback? Report on{' '}
+            <TrackedLink
               href='https://github.com/blacksmithinfosec/risk-assessments/issues'
               target='_blank'
               rel='noopener noreferrer'
             >
               GitHub
-            </a>. You are also welcome to fork this repo to create your own customized / personalized assessment tool.
+            </TrackedLink>.
+            You are also welcome to fork this repo to create your own customized / personalized assessment tool.
           </span>
         </div>
       </div>

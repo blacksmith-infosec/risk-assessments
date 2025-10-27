@@ -10,7 +10,9 @@ export default defineConfig({
         'src/**/*.{test,spec}.{ts,tsx}',
         'src/**/*.d.ts',
         'src/main.tsx',
-        'src/vite-env.d.ts'
+        'src/vite-env.d.ts',
+        'src/test-utils/*',
+        'src/types/*'
       ]
     },
     environment: 'jsdom',
