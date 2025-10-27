@@ -4,7 +4,7 @@ import PageNotFound from './NotFound';
 import Questionnaire from './Questionnaire';
 import DomainScanner from './DomainScanner';
 import Report from './Report';
-import ImportExport from './ImportExport';
+import Import from './Import';
 import { AppStateProvider, useAppState } from '../context/AppStateContext';
 import { TrackedButton } from './TrackedButton';
 import ResetDialog from './ResetDialog';
@@ -109,7 +109,7 @@ const AppContent = () => {
           <Route path='/questionnaire' element={<Questionnaire />} />
           <Route path='/domain' element={<DomainScanner />} />
           <Route path='/report' element={<Report />} />
-          <Route path='/data' element={<ImportExport />} />
+          <Route path='/data' element={<Import />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </section>

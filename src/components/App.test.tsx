@@ -38,7 +38,6 @@ describe('App - Reset Functionality', () => {
     bestPractices: [],
     domainScanAggregate: domainScanAggregate as AppStateContextValue['domainScanAggregate'],
     scannerProgress: [],
-    scanDomain: vi.fn(),
     runScanners: vi.fn(),
     exportJSON: mockExportJSON,
     importJSON: vi.fn()

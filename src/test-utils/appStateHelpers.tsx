@@ -21,7 +21,6 @@ export interface MockAppStateValue {
   domainScan?: DomainScanResult;
   domainScanAggregate?: DomainScanAggregate;
   scannerProgress?: ExecutedScannerResult[];
-  scanDomain?: (domain: string) => Promise<void>;
   runScanners?: (domain: string) => Promise<void>;
   exportJSON?: () => string;
   importJSON?: (json: string) => boolean;
@@ -45,7 +44,6 @@ export const createMockAppState = (overrides: Partial<MockAppStateValue> = {}): 
     risks: [],
     bestPractices: [],
     scannerProgress: [],
-    scanDomain: async () => {},
     runScanners: async () => {},
     exportJSON: () => '{}',
     importJSON: () => true,

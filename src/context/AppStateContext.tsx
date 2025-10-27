@@ -3,7 +3,7 @@ import questionsData from '../data/questions.json';
 import { Question, RawOption, RawQuestion } from '../types/questions';
 import { computeScore, ScoreResult } from '../utils/scoring';
 import { mapRisks, RiskMappingResult } from '../utils/recommendations';
-import { runDomainAssessment, DomainScanResult } from '../utils/domainChecks';
+import { DomainScanResult } from '../utils/domainChecks';
 import { runAllScanners } from '../utils/domainScannerFramework';
 import { DomainScanAggregate } from '../types/domainScan';
 import { ExecutedScannerResult } from '../types/domainScan';
@@ -24,7 +24,6 @@ interface AppStateContextValue {
   // New aggregated scanner state
   domainScanAggregate?: DomainScanAggregate;
   scannerProgress: ExecutedScannerResult[];
-  scanDomain: (domain: string) => Promise<void>;
   runScanners: (domain: string) => Promise<void>;
   exportJSON: () => string;
   importJSON: (json: string) => boolean;
@@ -78,9 +77,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [answers, setAnswers] = useState<Record<string, string>>(
     () => loadStored<Record<string, string>>(ANSWERS_KEY) || {}
   );
-  const [domainScan, setDomainScan] = useState<DomainScanResult | undefined>(
-    () => loadStored<DomainScanResult>(DOMAIN_KEY)
-  );
   const [domainScanAggregate, setDomainScanAggregate] = useState<DomainScanAggregate | undefined>(
     () => loadStored<DomainScanAggregate>(DOMAIN_AGG_KEY)
   );
@@ -113,7 +109,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const resetAll = () => {
     setAnswers({});
-    setDomainScan(undefined);
     setDomainScanAggregate(undefined);
     setScannerProgress([]);
     localStorage.removeItem(ANSWERS_KEY);
@@ -125,14 +120,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const score = useMemo(() => computeScore(answers, questions), [answers, questions]);
   const { risks, bestPractices }: RiskMappingResult = useMemo(() => mapRisks(answers, questions), [answers, questions]);
 
-  const scanDomain = async (domain: string) => {
-    // Legacy single-pass assessment for backward compatibility
-    const result = await runDomainAssessment(domain);
-    setDomainScan(result);
-    persist(DOMAIN_KEY, result);
-    trackEvent('domain_scanned', { domain: result.domain, issues_count: result.issues.length });
-  };
-
   const runScanners = async (domain: string) => {
     setScannerProgress([]);
     const agg = await runAllScanners(domain, (partial) => {
@@ -143,13 +130,12 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     trackEvent('domain_scanned_modular', { domain: agg.domain, issues_count: agg.issues.length });
   };
 
-  const exportJSON = () => JSON.stringify({ answers, risks, bestPractices, domainScan, domainScanAggregate }, null, 2);
+  const exportJSON = () => JSON.stringify({ answers, risks, bestPractices, domainScanAggregate }, null, 2);
 
   const importJSON = (json: string): boolean => {
     try {
       const obj = JSON.parse(json);
       if (obj.answers && typeof obj.answers === 'object') setAnswers(obj.answers);
-      if (obj.domainScan && typeof obj.domainScan === 'object') setDomainScan(obj.domainScan);
       if (obj.domainScanAggregate && typeof obj.domainScanAggregate === 'object') {
         setDomainScanAggregate(obj.domainScanAggregate);
       }
@@ -170,12 +156,10 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         resetAnswers,
         resetAll,
         score,
-  risks,
-  bestPractices,
-        domainScan,
+        risks,
+        bestPractices,
         domainScanAggregate,
         scannerProgress,
-        scanDomain,
         runScanners,
         exportJSON,
         importJSON

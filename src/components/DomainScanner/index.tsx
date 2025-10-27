@@ -7,8 +7,8 @@ import { trackFormSubmit } from '../../utils/analytics';
 import Footer from '../Footer';
 
 const DomainScanner = () => {
-  const { runScanners, domainScanAggregate, scannerProgress, domainScan } = useAppState();
-  const [input, setInput] = useState(domainScanAggregate?.domain || domainScan?.domain || '');
+  const { runScanners, domainScanAggregate, scannerProgress } = useAppState();
+  const [input, setInput] = useState(domainScanAggregate?.domain || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -148,15 +148,6 @@ const DomainScanner = () => {
           </div>
         )}
       </div>
-      {!domainScanAggregate && domainScan && (
-        <div className='legacy-results'>
-          <h3>Legacy Combined Assessment</h3>
-          <p>This view persists until a new modular scan is run.</p>
-          <p><em>Domain:</em> {domainScan.domain}</p>
-          <p><em>Timestamp:</em> {new Date(domainScan.timestamp).toLocaleString()}</p>
-          <p><em>Issues:</em> {domainScan.issues.length}</p>
-        </div>
-      )}
       <p className='disclaimer'>
         Disclaimer: Some checks (full SSL chain, exhaustive headers, breach data) require backend or API keys
         not included in this free static tool.

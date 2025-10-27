@@ -8,7 +8,7 @@ import { TrackedLink } from '../TrackedLink';
 import Footer from '../Footer';
 
 const Report: React.FC = () => {
-  const { score, risks, bestPractices, domainScan, domainScanAggregate, exportJSON } = useAppState();
+  const { score, risks, bestPractices, domainScanAggregate, exportJSON } = useAppState();
   const reportRef = useRef<HTMLDivElement | null>(null);
 
   const onExportJSON = () => {
@@ -95,14 +95,6 @@ const Report: React.FC = () => {
           </div>
         </section>
 
-        {domainScan && !domainScanAggregate && (
-          <section>
-            <h3>Domain Findings ({domainScan.domain})</h3>
-            <ul>
-              {domainScan.issues.map((i) => <li key={i}>{i}</li>)}
-            </ul>
-          </section>
-        )}
         {domainScanAggregate && (
           <section>
             <h3>Domain Security Scan</h3>
