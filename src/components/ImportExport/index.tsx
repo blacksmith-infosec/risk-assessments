@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import { TrackedButton } from '../TrackedButton';
 import { trackExport, trackImport } from '../../utils/analytics';
+import Footer from '../Footer';
 
 const ImportExport = () => {
   const { importJSON, exportJSON } = useAppState();
@@ -42,6 +43,7 @@ const ImportExport = () => {
         </TrackedButton>
       </div>
       {status && <div className='status'>{status}</div>}
+      <Footer />
     </div>
   );
 };

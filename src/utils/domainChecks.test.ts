@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
-  fetchDNS,
-  fetchTXT,
+  checkDKIM,
   extractSPF,
   fetchDMARC,
-  checkDKIM,
+  fetchDNS,
+  fetchTXT,
   fetchCertificates,
   deriveIssues,
   runDomainAssessment,
@@ -17,7 +17,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('fetchDNS', () => {
+describe('checkDNS', () => {
   it('should return DNS records when API returns valid data', async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,

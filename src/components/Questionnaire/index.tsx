@@ -3,6 +3,7 @@ import { useAppState } from '../../context/AppStateContext';
 import CategoryRadarChart from '../CategoryRadarChart';
 import ConfirmDialog from '../ConfirmDialog';
 import { TrackedButton } from '../TrackedButton';
+import Footer from '../Footer';
 
 const Questionnaire: React.FC = () => {
   const { questions, answers, setAnswer, resetAnswers, score } = useAppState();
@@ -137,6 +138,7 @@ const Questionnaire: React.FC = () => {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as amplitude from '@amplitude/analytics-browser';
 import {
   trackEvent,

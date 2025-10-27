@@ -1,6 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import { computeScore } from './scoring';
-import { Question } from '../types/questions';
+import type { Question } from '../types/questions';
 
 describe('computeScore', () => {
   const questions: Question[] = [

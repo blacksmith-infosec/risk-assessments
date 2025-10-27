@@ -1768,3 +1768,15 @@ nav a.active {
   color: var(--darkblue);
 }
 
+.footer-logo {
+  width: 32px;
+  margin: 1rem auto;
+  display: block;
+}
+
+.footer-text {
+  display: block;
+  font-size: smaller;
+  text-align: center;
+}
+

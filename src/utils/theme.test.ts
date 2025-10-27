@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { getChartTheme, getChartThemeWith } from './theme';
+import { getChartTheme } from './theme';
 
 // We simulate CSS variables by attaching them to document.documentElement style.
 // Vitest + jsdom environment allows setProperty/getPropertyValue via style objects.
@@ -29,13 +28,6 @@ describe('theme utility', () => {
     expect(theme.fill).toBe('#123456');
     expect(theme.grid).toBe('#abcdef');
     expect(theme.text).toBe('#111111');
-  });
-
-  it('applies transform via getChartThemeWith', () => {
-    const transformed = getChartThemeWith((t) => ({ ...t, stroke: 'hotpink' }));
-    expect(transformed.stroke).toBe('hotpink');
-    // untouched values still fallback
-    expect(transformed.fill).toBe('#44C8F5');
   });
 
   it('handles partial variable definitions gracefully', () => {

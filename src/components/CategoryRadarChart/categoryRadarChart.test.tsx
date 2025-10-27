@@ -1,7 +1,6 @@
 // NOTE: Requires @testing-library/react dev dependency. Install via:
 //   npm install -D @testing-library/react
 import React from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import CategoryRadarChart, { buildChartData } from './index';
 import { getChartTheme } from '../../utils/theme';

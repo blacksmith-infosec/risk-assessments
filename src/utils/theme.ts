@@ -34,8 +34,3 @@ export const getChartTheme = (): ChartTheme => {
     text: readVar(VAR_MAP.text, '#231F20')
   };
 };
-
-// Extension point: consumers can supply transforms (e.g., tweak opacity or dynamic adjustments).
-export const getChartThemeWith = (transform: (theme: ChartTheme) => ChartTheme): ChartTheme => {
-  return transform(getChartTheme());
-};

@@ -5,6 +5,7 @@ import { interpretScannerResult } from '../../utils/domainScannerFramework';
 import { exportToWord } from '../../utils/exportReport';
 import { TrackedButton } from '../TrackedButton';
 import { TrackedLink } from '../TrackedLink';
+import Footer from '../Footer';
 
 const Report: React.FC = () => {
   const { score, risks, bestPractices, domainScan, domainScanAggregate, exportJSON } = useAppState();
@@ -193,6 +194,7 @@ const Report: React.FC = () => {
           </p>
         </section>
       </div>
+      <Footer />
     </div>
   );
 };

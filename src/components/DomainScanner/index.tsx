@@ -4,6 +4,7 @@ import { SCANNERS, interpretScannerResult } from '../../utils/domainScannerFrame
 import { TrackedButton } from '../TrackedButton';
 import { TrackedLink } from '../TrackedLink';
 import { trackFormSubmit } from '../../utils/analytics';
+import Footer from '../Footer';
 
 const DomainScanner = () => {
   const { runScanners, domainScanAggregate, scannerProgress, domainScan } = useAppState();
@@ -160,6 +161,7 @@ const DomainScanner = () => {
         Disclaimer: Some checks (full SSL chain, exhaustive headers, breach data) require backend or API keys
         not included in this free static tool.
       </p>
+      <Footer />
     </div>
   );
 };

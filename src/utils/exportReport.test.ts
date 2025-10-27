@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { generateWordHTML, exportToWord } from './exportReport';
 import type { ScoreResult } from './scoring';
 import type { DomainScanAggregate } from '../types/domainScan';

@@ -1,6 +1,5 @@
-import { describe, it, expect } from 'vitest';
 import { mapRisks, RiskMappingResult } from './recommendations';
-import { Question } from '../types/questions';
+import type { Question } from '../types/questions';
 
 describe('mapRisks', () => {
   const questions: Question[] = [
