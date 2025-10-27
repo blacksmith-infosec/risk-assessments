@@ -5,7 +5,7 @@ const Home = () => (
   <section className='home-panel modern-home'>
     <header className='home-header'>
       <h1>
-        Blacksmith Risk Assessment
+        Risk Assessment
       </h1>
       <p className='subtitle'>Free, private, and fast security posture check</p>
     </header>
@@ -35,7 +35,9 @@ const Home = () => (
       <div className='home-notes'>
         <div className='note'>
           <span className='note-icon'>🔒</span>
-          <span>Data is stored locally in your browser. No answers or scans are transmitted to a server.</span>
+          <span className='note-text'>
+            Data is stored locally in your browser. No answers or scans are transmitted to a server.
+          </span>
         </div>
       </div>
     </main>
