@@ -58,6 +58,10 @@
   transition: background 0.3s, color 0.3s, box-shadow 0.3s;
 }
 
+.app-footer {
+  margin-top: 20px;
+}
+
 @media (max-width: 768px) {
   .app-panel.panel {
     margin: 1rem;

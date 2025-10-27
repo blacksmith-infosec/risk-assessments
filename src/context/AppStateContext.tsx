@@ -16,6 +16,7 @@ interface AppStateContextValue {
   answers: Record<string, string>;
   setAnswer: (id: string, value: string) => void;
   resetAnswers: () => void;
+  resetAll: () => void;
   score: ScoreResult;
   risks: string[];
   bestPractices: string[];
@@ -110,6 +111,17 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     trackEvent('answers_reset');
   };
 
+  const resetAll = () => {
+    setAnswers({});
+    setDomainScan(undefined);
+    setDomainScanAggregate(undefined);
+    setScannerProgress([]);
+    localStorage.removeItem(ANSWERS_KEY);
+    localStorage.removeItem(DOMAIN_KEY);
+    localStorage.removeItem(DOMAIN_AGG_KEY);
+    trackEvent('reset_all');
+  };
+
   const score = useMemo(() => computeScore(answers, questions), [answers, questions]);
   const { risks, bestPractices }: RiskMappingResult = useMemo(() => mapRisks(answers, questions), [answers, questions]);
 
@@ -156,6 +168,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         answers,
         setAnswer,
         resetAnswers,
+        resetAll,
         score,
   risks,
   bestPractices,

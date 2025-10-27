@@ -1,13 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import CategoryRadarChart from '../CategoryRadarChart';
-import ConfirmDialog from '../ConfirmDialog';
-import { TrackedButton } from '../TrackedButton';
 import Footer from '../Footer';
 
 const Questionnaire: React.FC = () => {
-  const { questions, answers, setAnswer, resetAnswers, score } = useAppState();
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const { questions, answers, setAnswer, score } = useAppState();
 
   // Calculate progress metrics
   const answeredCount = useMemo(() => {
@@ -25,47 +22,16 @@ const Questionnaire: React.FC = () => {
     return 'score-poor';
   };
 
-  const handleReset = () => {
-    resetAnswers();
-    setShowResetConfirm(false);
-  };
-
   return (
     <div className='panel questionnaire-panel'>
       <div className='questionnaire-header'>
         <div className='questionnaire-header-content'>
           <h2>Security Risk Assessment</h2>
-          {answeredCount > 0 && (
-            <TrackedButton
-              className='reset-btn'
-              trackingName='reset_questionnaire'
-              trackingProperties={{ answered_count: answeredCount }}
-              onClick={() => setShowResetConfirm(true)}
-              title='Reset all answers'
-            >
-              🔄 Reset
-            </TrackedButton>
-          )}
         </div>
         <p className='questionnaire-subtitle'>
           Answer each question below to evaluate your security posture. Your risk score updates in real time.
         </p>
       </div>
-
-      {/* Reset Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showResetConfirm}
-        title='Reset All Answers?'
-        message={
-          'This will clear all ' + answeredCount + ' answer' + (answeredCount !== 1 ? 's' : '') +
-          ' and reset your assessment. This action cannot be undone.'
-        }
-        confirmLabel='Reset All Answers'
-        cancelLabel='Cancel'
-        onConfirm={handleReset}
-        onCancel={() => setShowResetConfirm(false)}
-        variant='danger'
-      />
 
       {/* Progress Section */}
       <div className='progress-section'>
