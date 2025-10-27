@@ -39,7 +39,7 @@
     "globals": "^16.4.0",
     "jsdom": "^27.0.1",
     "vite": "^7.1.12",
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.4"
   },
   "overrides": {
     "braces": "3.0.3",
