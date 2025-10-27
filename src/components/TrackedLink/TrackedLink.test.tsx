@@ -7,6 +7,17 @@ vi.mock('../../utils/analytics', () => ({
   trackExternalLink: vi.fn()
 }));
 
+// Helper to click link without navigation warnings
+const clickLink = (link: HTMLElement) => {
+  // Add temporary event listener to prevent default navigation
+  const preventNavigation = (e: Event) => {
+    e.preventDefault();
+  };
+  link.addEventListener('click', preventNavigation, { capture: true });
+  fireEvent.click(link);
+  link.removeEventListener('click', preventNavigation, { capture: true });
+};
+
 describe('TrackedLink', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -92,7 +103,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledTimes(1);
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('https://example.com', 'Visit Site');
@@ -106,7 +117,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('https://github.com', 'GitHub');
     });
@@ -119,7 +130,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('https://example.com', undefined);
     });
@@ -132,7 +143,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('/about', 'About Us');
     });
@@ -145,7 +156,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('mailto:test@example.com', 'Email Us');
     });
@@ -162,7 +173,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
@@ -177,7 +188,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(handleClick).toHaveBeenCalledWith(expect.objectContaining({
         type: 'click'
@@ -202,7 +213,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(callOrder).toEqual(['track', 'onClick']);
     });
@@ -215,7 +226,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledTimes(1);
     });
@@ -230,9 +241,9 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
-      fireEvent.click(link);
-      fireEvent.click(link);
+      clickLink(link);
+      clickLink(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledTimes(3);
     });
@@ -247,8 +258,8 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
-      fireEvent.click(link);
+      clickLink(link);
+      clickLink(link);
 
       expect(handleClick).toHaveBeenCalledTimes(2);
     });
@@ -286,7 +297,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('https://example.com', undefined);
     });
@@ -305,7 +316,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith(
         'https://github.com/blacksmithinfosec/risk-assessments/issues',
@@ -325,7 +336,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith(
         'https://blacksmithinfosec.com/?utm_source=risk-assessment-tool',
@@ -345,7 +356,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith(
         'https://securityheaders.com/?q=test.com',
@@ -364,7 +375,7 @@ describe('TrackedLink', () => {
 
       // Empty href is not considered accessible, so use getByText
       const link = screen.getByText('Empty Link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('', 'Empty Link');
     });
@@ -377,7 +388,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('#section', 'Jump to Section');
     });
@@ -408,7 +419,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       // Number children are not strings, so linkText should be undefined
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('https://example.com', undefined);
@@ -426,7 +437,7 @@ describe('TrackedLink', () => {
       );
 
       const link = screen.getByRole('link');
-      fireEvent.click(link);
+      clickLink(link);
 
       // Should only call with href and linkText, not additional properties
       expect(analytics.trackExternalLink).toHaveBeenCalledWith('https://example.com', 'Link');

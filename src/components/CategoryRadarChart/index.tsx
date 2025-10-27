@@ -20,6 +20,28 @@ export const buildChartData = (items: CategoryScore[]) => items.map((c) => ({
   fullName: c.category,
 }));
 
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: { fullName: string; score: number } }>;
+}
+
+// Exported for testability: custom tooltip component
+export const CustomTooltip: React.FC<TooltipProps> = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className='radar-tooltip'>
+        <p className='radar-tooltip-title'>
+          {payload[0].payload.fullName}
+        </p>
+        <p className='radar-tooltip-score'>
+          {payload[0].payload.score}%
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const CategoryRadarChart: React.FC<CategoryRadarChartProps> = ({ categories }) => {
   const [darkMode, setDarkMode] = useState(false);
 
@@ -58,27 +80,6 @@ const CategoryRadarChart: React.FC<CategoryRadarChartProps> = ({ categories }) =
     grid: darkMode
       ? getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim() || baseTheme.grid
       : baseTheme.grid,
-  };
-
-  interface TooltipProps {
-    active?: boolean;
-    payload?: Array<{ payload: { fullName: string; score: number } }>;
-  }
-
-  const CustomTooltip: React.FC<TooltipProps> = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className='radar-tooltip'>
-          <p className='radar-tooltip-title'>
-            {payload[0].payload.fullName}
-          </p>
-          <p className='radar-tooltip-score'>
-            {payload[0].payload.score}%
-          </p>
-        </div>
-      );
-    }
-    return null;
   };
 
   return (

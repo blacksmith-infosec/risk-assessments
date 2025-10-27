@@ -1,9 +1,52 @@
+import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 
 import Report from './index';
 import { createMockAppState, createSampleScore, createSampleScannerAggregate } from '../../test-utils/appStateHelpers';
 import * as AppStateContext from '../../context/AppStateContext';
 import type { AppStateContextValue } from '../../context/AppStateContext';
+
+// Mock Recharts to avoid dimension warnings in tests
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual('recharts');
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 400, height: 300 }}>{children}</div>
+    ),
+  };
+});
+
+// Suppress remaining console warnings
+// eslint-disable-next-line no-console
+const originalError = console.error;
+// eslint-disable-next-line no-console
+const originalWarn = console.warn;
+beforeAll(() => {
+  // eslint-disable-next-line no-console
+  console.error = (...args: unknown[]) => {
+    const message = String(args[0]);
+    if (message.includes('Not implemented: navigation')) {
+      return; // Suppress jsdom navigation warnings
+    }
+    originalError.call(console, ...args);
+  };
+  // eslint-disable-next-line no-console
+  console.warn = (...args: unknown[]) => {
+    const message = String(args[0]);
+    if (message.includes('width') && message.includes('height')) {
+      return; // Suppress Recharts dimension warnings
+    }
+    originalWarn.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  // eslint-disable-next-line no-console
+  console.error = originalError;
+  // eslint-disable-next-line no-console
+  console.warn = originalWarn;
+});
 
 // Minimal mock for ResizeObserver which Recharts uses in ResponsiveContainer
 class ResizeObserverMock {
