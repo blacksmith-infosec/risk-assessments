@@ -106,28 +106,19 @@ const Report: React.FC = () => {
           <section>
             <h3>Domain Security Scan</h3>
             <div className='scanner-summary'>
-              <div className='scanner-summary-card'>
-                <div className='scanner-summary-label'>Domain</div>
-                <div className='scanner-summary-value'>{domainScanAggregate.domain}</div>
-              </div>
-              <div className='scanner-summary-card'>
-                <div className='scanner-summary-label'>Scanned</div>
-                <div className='scanner-summary-value'>
-                  {new Date(domainScanAggregate.timestamp).toLocaleString()}
-                </div>
-              </div>
-              <div className='scanner-summary-card'>
-                <div className='scanner-summary-label'>Tests Run</div>
-                <div className='scanner-summary-value'>{domainScanAggregate.scanners.length}</div>
-              </div>
-              <div className='scanner-summary-card'>
-                <div className='scanner-summary-label'>Issues Found</div>
-                <div className={`scanner-summary-value ${
+              <p className='scanner-summary-line'>
+                <strong>{domainScanAggregate.domain}</strong>
+                {' — '}
+                {domainScanAggregate.scanners.length} test{domainScanAggregate.scanners.length !== 1 ? 's' : ''},{' '}
+                <span className={
                   domainScanAggregate.issues.length === 0 ? 'scanner-summary-success' : 'scanner-summary-warning'
-                }`}>
-                  {domainScanAggregate.issues.length}
-                </div>
-              </div>
+                }>
+                  {domainScanAggregate.issues.length} issue{domainScanAggregate.issues.length !== 1 ? 's' : ''}
+                </span>
+              </p>
+              <p className='scanner-summary-timestamp'>
+                {new Date(domainScanAggregate.timestamp).toLocaleString()}
+              </p>
             </div>
 
             <h4>Scan Results</h4>

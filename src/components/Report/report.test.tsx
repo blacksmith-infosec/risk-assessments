@@ -174,8 +174,7 @@ describe('Report Component', () => {
 
       expect(screen.getByText(/Domain Security Scan/i)).toBeDefined();
       expect(screen.getByText('example.com')).toBeDefined();
-      expect(screen.getByText(/Tests Run/i)).toBeDefined();
-      expect(screen.getByText('2')).toBeDefined();
+      expect(screen.getByText(/2 tests,/i)).toBeDefined();
     });
 
     it('displays issues count in summary', () => {
@@ -186,9 +185,7 @@ describe('Report Component', () => {
 
       render(<Report />);
 
-      expect(screen.getByText(/Issues Found/i)).toBeDefined();
-      // Aggregate has 1 issue (DMARC missing)
-      expect(screen.getByText('1')).toBeDefined();
+      expect(screen.getByText(/1 issue/i)).toBeDefined();
     });
 
     it('renders scanner cards with status', () => {
