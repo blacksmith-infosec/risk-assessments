@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import questionsData from '../data/questions.json';
 import { Question, RawOption, RawQuestion } from '../types/questions';
 import { computeScore, ScoreResult } from '../utils/scoring';
-import { mapRisks } from '../utils/recommendations';
+import { mapRisks, RiskMappingResult } from '../utils/recommendations';
 import { runDomainAssessment, DomainScanResult } from '../utils/domainChecks';
 import { runAllScanners } from '../utils/domainScannerFramework';
 import { DomainScanAggregate } from '../types/domainScan';
@@ -17,6 +17,7 @@ interface AppStateContextValue {
   resetAnswers: () => void;
   score: ScoreResult;
   risks: string[];
+  bestPractices: string[];
   domainScan?: DomainScanResult;
   // New aggregated scanner state
   domainScanAggregate?: DomainScanAggregate;
@@ -26,6 +27,8 @@ interface AppStateContextValue {
   exportJSON: () => string;
   importJSON: (json: string) => boolean;
 }
+
+export type { AppStateContextValue };
 
 const AppStateContext = createContext<AppStateContextValue | undefined>(undefined);
 
@@ -107,7 +110,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const score = useMemo(() => computeScore(answers, questions), [answers, questions]);
-  const risks = useMemo<string[]>(() => mapRisks(answers, questions), [answers, questions]);
+  const { risks, bestPractices }: RiskMappingResult = useMemo(() => mapRisks(answers, questions), [answers, questions]);
 
   const scanDomain = async (domain: string) => {
     // Legacy single-pass assessment for backward compatibility
@@ -127,7 +130,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     amplitude.logEvent('domain_scanned_modular', { domain: agg.domain, issues: agg.issues.length });
   };
 
-  const exportJSON = () => JSON.stringify({ answers, domainScan, domainScanAggregate }, null, 2);
+  const exportJSON = () => JSON.stringify({ answers, risks, bestPractices, domainScan, domainScanAggregate }, null, 2);
 
   const importJSON = (json: string): boolean => {
     try {
@@ -152,7 +155,8 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setAnswer,
         resetAnswers,
         score,
-        risks,
+  risks,
+  bestPractices,
         domainScan,
         domainScanAggregate,
         scannerProgress,

@@ -33,7 +33,10 @@ const DomainScanner = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <button type='submit' disabled={loading}>{loading ? 'Scanning...' : 'Scan Domain'}</button>
+        <button type='submit' disabled={loading}>
+          <span className='button-text-full'>{loading ? 'Scanning...' : 'Scan Domain'}</span>
+          <span className='button-text-short'>{loading ? 'Scanning...' : 'Scan'}</span>
+        </button>
       </form>
       {error && <div className='error'>{error}</div>}
       <div className='modular-results'>

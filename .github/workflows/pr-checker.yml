@@ -1,0 +1,6 @@
+on:
+  pull_request:
+
+jobs:
+  BuildTestLint:
+    uses: ./.github/workflows/lint-and-test.yml
