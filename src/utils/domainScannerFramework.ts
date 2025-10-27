@@ -16,8 +16,14 @@ import {
   fetchCertificates,
 } from './domainChecks';
 
-// Default timeout for each scanner (30 seconds)
-const DEFAULT_SCANNER_TIMEOUT = 30000;
+// Default timeout for each scanner (30 seconds). Made mutable for testing.
+let DEFAULT_SCANNER_TIMEOUT = 30000;
+
+// Allow runtime override (e.g., tests forcing quick timeout)
+export const setScannerTimeout = (ms: number) => {
+  if (ms <= 0 || !Number.isFinite(ms)) throw new Error('Invalid timeout value');
+  DEFAULT_SCANNER_TIMEOUT = ms;
+};
 
 // Utility to run a promise with timeout
 const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, scannerLabel: string): Promise<T> => {

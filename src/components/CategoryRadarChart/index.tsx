@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { getChartTheme } from '../../utils/theme';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
-interface CategoryScore {
+export interface CategoryScore {
   category: string;
   percent: number;
   total: number;
@@ -11,6 +12,13 @@ interface CategoryScore {
 interface CategoryRadarChartProps {
   categories: CategoryScore[];
 }
+
+// Exported for testability: transforms raw categories into chart-ready data.
+export const buildChartData = (items: CategoryScore[]) => items.map((c) => ({
+  category: c.category.replace(/ & /g, ' &\n').replace(/ Management/g, '\nMgmt'),
+  score: c.percent,
+  fullName: c.category,
+}));
 
 const CategoryRadarChart: React.FC<CategoryRadarChartProps> = ({ categories }) => {
   const [darkMode, setDarkMode] = useState(false);
@@ -33,29 +41,24 @@ const CategoryRadarChart: React.FC<CategoryRadarChartProps> = ({ categories }) =
     return () => observer.disconnect();
   }, []);
 
-  // Transform data for recharts
-  const chartData = categories.map((c) => ({
-    category: c.category.replace(/ & /g, ' &\n').replace(/ Management/g, '\nMgmt'),
-    score: c.percent,
-    fullName: c.category
-  }));
+  const chartData = buildChartData(categories);
 
-  const colors = {
-    light: {
-      stroke: '#44C8F5',
-      fill: '#44C8F5',
-      grid: '#E8E8E8',
-      text: '#231F20'
-    },
-    dark: {
-      stroke: '#44C8F5',
-      fill: '#44C8F5',
-      grid: '#3a3a3a',
-      text: '#FFFFFF'
-    }
+  // Chart theme derived from CSS variables so users can customize colors centrally.
+  // To adjust the chart palette, override the following CSS variables in styles.css or a theme file:
+  //  --accent (controls stroke/fill)
+  //  --lightgray (grid lines)
+  //  --text-primary (labels)
+  // For dark mode, toggling the 'dark' class on <html> swaps the variable set.
+  const baseTheme = getChartTheme();
+  // For dark mode we may want to override grid/text if CSS variables provide distinct values.
+  const theme = {
+    ...baseTheme,
+    // If dark mode ensure text uses current computed primary text color.
+    text: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || baseTheme.text,
+    grid: darkMode
+      ? getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim() || baseTheme.grid
+      : baseTheme.grid,
   };
-
-  const theme = darkMode ? colors.dark : colors.light;
 
   interface TooltipProps {
     active?: boolean;

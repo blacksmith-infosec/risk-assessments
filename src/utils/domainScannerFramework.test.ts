@@ -3,6 +3,8 @@ import {
   SCANNERS,
   runAllScanners,
   runScanner,
+  interpretScannerResult,
+  setScannerTimeout,
 } from './domainScannerFramework';
 
 // Mock fetch globally
@@ -125,6 +127,24 @@ describe('runAllScanners', () => {
     const progressCalls = onProgress.mock.calls;
     expect(progressCalls.length).toBeGreaterThan(0);
   });
+
+  it('provides interpretation for emailAuth severity levels', async () => {
+    // Mock fetch empty responses to generate issues (critical / warning depending on count logic)
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+      headers: { get: () => null },
+    });
+    const result = await runAllScanners('example.com');
+  const emailResult = result.scanners.find((s) => s.id === 'emailAuth');
+    expect(emailResult).toBeDefined();
+    if (emailResult) {
+      const interpretation = interpretScannerResult(emailResult);
+      expect(['warning','critical','success','info']).toContain(interpretation.severity);
+      // With all missing we expect critical (3 issues)
+      expect(emailResult.issues?.length).toBeGreaterThanOrEqual(3);
+    }
+  });
 });
 
 describe('runScanner', () => {
@@ -207,6 +227,125 @@ describe('runScanner', () => {
       expect(result.issues).toBeDefined();
       expect(Array.isArray(result.issues)).toBe(true);
     }
+  });
+
+  it('returns interpretation for certificate counts', async () => {
+    // Mock certificate scanner fetch with many certs
+  const certScanner = SCANNERS.find((s) => s.id === 'certificates');
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => Array.from({ length: 55 }, (_, i) => ({ id: i, name: 'example.com' })),
+      headers: { get: () => null },
+    });
+    if (certScanner) {
+      const exec = await certScanner.run('example.com');
+      const executed = {
+        id: certScanner.id,
+        label: certScanner.label,
+        status: 'success',
+        startedAt: new Date().toISOString(),
+        finishedAt: new Date().toISOString(),
+        issues: [],
+        ...(exec as { data?: unknown; summary?: string }),
+      };
+      // Cast to expected shape for interpreter
+      const executedCast = executed as unknown as {
+        id: string;
+        label: string;
+        status: 'success';
+        startedAt: string;
+        finishedAt: string;
+        issues: string[];
+        data?: unknown;
+        summary?: string;
+      };
+      const interp = interpretScannerResult(executedCast);
+      expect(interp.recommendation).toMatch(/Large number of certificates/);
+    }
+  });
+
+  it('times out when forced very low timeout', async () => {
+    // Force timeout to 1ms and run DNS scanner (which will attempt fetch)
+    setScannerTimeout(1);
+  const dnsId = SCANNERS.find((s) => s.id === 'dns')?.id as string;
+    // Mock a fetch that never resolves quickly (simulate delay by returning a promise that resolves after 50ms)
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
+      () => new Promise((resolve) =>
+        setTimeout(
+          () =>
+            resolve({
+              ok: true,
+              json: async () => ({}),
+            }),
+          50
+        )
+      )
+    );
+    const result = await runScanner('example.com', dnsId);
+    expect(result.status).toBe('error');
+    expect(result.error).toMatch(/timed out/);
+    // Restore default timeout for subsequent tests
+    setScannerTimeout(30000);
+  });
+});
+
+describe('interpretScannerResult securityHeaders fallback', () => {
+  it('handles unavailable status gracefully', () => {
+    const securityResult = {
+      id: 'securityHeaders',
+      label: 'Security Headers',
+      status: 'success',
+      startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
+      data: { status: 'unavailable', testUrl: 'https://securityheaders.com example' },
+      issues: [],
+    };
+    const securityCast = securityResult as unknown as {
+      id: string;
+      label: string;
+      status: 'success';
+      startedAt: string;
+      finishedAt: string;
+      issues: string[];
+      data: unknown;
+    };
+    const interp = interpretScannerResult(securityCast);
+    expect(interp.severity).toBe('info');
+    expect(interp.message).toMatch(/Headers check unavailable/);
+  });
+
+  it('maps grade to severity', () => {
+    const grades: Record<string, string> = {
+      'A+': 'success',
+      'A': 'success',
+      'B': 'info',
+      'C': 'warning',
+      'D': 'warning',
+      'E': 'critical',
+      'F': 'critical',
+    };
+    Object.entries(grades).forEach(([grade, expected]) => {
+      const securityResult = {
+        id: 'securityHeaders',
+        label: 'Security Headers',
+        status: 'success',
+        startedAt: new Date().toISOString(),
+        finishedAt: new Date().toISOString(),
+        data: { grade },
+        issues: [],
+      };
+      const gradeCast = securityResult as unknown as {
+        id: string;
+        label: string;
+        status: 'success';
+        startedAt: string;
+        finishedAt: string;
+        issues: string[];
+        data: unknown;
+      };
+      const interp = interpretScannerResult(gradeCast);
+      expect(interp.severity).toBe(expected);
+    });
   });
 });
 

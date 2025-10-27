@@ -1158,6 +1158,38 @@ nav a.active {
   white-space: nowrap;
 }
 
+.domain-form button .button-text-short {
+  display: none;
+}
+
+.domain-form button .button-text-full {
+  display: inline;
+}
+
+@media (max-width: 480px) {
+  .domain-form {
+    flex-wrap: wrap;
+  }
+
+  .domain-form input {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .domain-form button {
+    flex: 1 1 100%;
+    padding: 0.75rem 1rem;
+  }
+
+  .domain-form button .button-text-full {
+    display: none;
+  }
+
+  .domain-form button .button-text-short {
+    display: inline;
+  }
+}
+
 .domain-form button:hover:not(:disabled) {
   background: var(--darkblue);
   transform: translateY(-1px);
@@ -1546,5 +1578,193 @@ nav a.active {
 
 .btn-link:active {
   transform: translateY(0);
+}
+
+/* Scanner Summary Cards (Report page) */
+.scanner-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.scanner-summary-card {
+  background: var(--card-bg);
+  border: 2px solid var(--lightgray);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.scanner-summary-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-hover);
+}
+
+.scanner-summary-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+.scanner-summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.scanner-summary-success {
+  color: var(--green) !important;
+}
+
+.scanner-summary-warning {
+  color: var(--red) !important;
+}
+
+/* Scanner Results Grid (Report page) */
+.scanner-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.scanner-card {
+  background: var(--card-bg);
+  border: 2px solid var(--lightgray);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scanner-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.scanner-card-success {
+  border-color: var(--green);
+}
+
+.scanner-card-error {
+  border-color: var(--red);
+}
+
+.scanner-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scanner-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.scanner-card-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.scanner-card-status-success {
+  background: var(--green);
+  color: white;
+}
+
+.scanner-card-status-error {
+  background: var(--red);
+  color: white;
+}
+
+.scanner-card-summary {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.scanner-card-interpretation {
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.scanner-card-interpretation.sev-success {
+  background: rgba(24, 187, 156, 0.1);
+  border-color: var(--green);
+}
+
+.scanner-card-interpretation.sev-info {
+  background: rgba(68, 200, 245, 0.1);
+  border-color: var(--blue);
+}
+
+.scanner-card-interpretation.sev-warning {
+  background: rgba(243, 156, 17, 0.1);
+  border-color: var(--yellow);
+}
+
+.scanner-card-interpretation.sev-critical,
+.scanner-card-interpretation.sev-error {
+  background: rgba(232, 76, 61, 0.1);
+  border-color: var(--red);
+}
+
+.scanner-card-interpretation strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.scanner-card-recommendation {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.scanner-card-issues {
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
+.scanner-card-issues li {
+  margin: 0.25rem 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.scanner-card-link {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--lightgray);
+}
+
+.scanner-card-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.scanner-card-link a:hover {
+  color: var(--darkblue);
 }
 
