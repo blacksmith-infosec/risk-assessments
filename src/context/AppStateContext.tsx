@@ -103,7 +103,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const resetAnswers = () => {
     setAnswers({});
-    persist(ANSWERS_KEY, {});
+    localStorage.removeItem(ANSWERS_KEY);
     trackEvent('answers_reset');
   };
 
@@ -135,12 +135,57 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const importJSON = (json: string): boolean => {
     try {
       const obj = JSON.parse(json);
-      if (obj.answers && typeof obj.answers === 'object') setAnswers(obj.answers);
-      if (obj.domainScanAggregate && typeof obj.domainScanAggregate === 'object') {
-        setDomainScanAggregate(obj.domainScanAggregate);
+
+      // Validate that obj is an object and not null or array
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+        trackImport('json', false);
+        return false;
       }
-      trackImport('json', true);
-      return true;
+
+      let hasValidData = false;
+
+      // Validate and import answers
+      if (obj.answers && typeof obj.answers === 'object' && !Array.isArray(obj.answers)) {
+        // Validate that all keys are strings and values are strings
+        const isValidAnswers = Object.entries(obj.answers).every(
+          ([key, value]) => typeof key === 'string' && typeof value === 'string'
+        );
+
+        if (isValidAnswers) {
+          setAnswers(obj.answers);
+          persist(ANSWERS_KEY, obj.answers);
+          hasValidData = true;
+        }
+      }
+
+      // Validate and import domain scan aggregate
+      if (
+        obj.domainScanAggregate &&
+        typeof obj.domainScanAggregate === 'object' &&
+        !Array.isArray(obj.domainScanAggregate)
+      ) {
+        // Validate required fields
+        const scan = obj.domainScanAggregate;
+        if (
+          typeof scan.domain === 'string' &&
+          typeof scan.timestamp === 'string' &&
+          Array.isArray(scan.scanners) &&
+          Array.isArray(scan.issues)
+        ) {
+          setDomainScanAggregate(obj.domainScanAggregate);
+          persist(DOMAIN_AGG_KEY, obj.domainScanAggregate);
+          hasValidData = true;
+        }
+      }
+
+      // Only track as successful if we actually imported some valid data
+      if (hasValidData) {
+        trackImport('json', true);
+        return true;
+      } else {
+        trackImport('json', false);
+        return false;
+      }
     } catch {
       trackImport('json', false);
       return false;
@@ -172,6 +217,6 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useAppState = () => {
   const ctx = useContext(AppStateContext);
-  if (!ctx) throw new Error('useAppState must be used within AppStateProvider');
+  if (!ctx) throw new Error('useAppState must be used within an AppStateProvider');
   return ctx;
 };

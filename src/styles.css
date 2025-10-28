@@ -378,6 +378,20 @@ textarea {
   font-family: monospace;
 }
 
+.hidden-file-input {
+  display: none;
+}
+
+.import-methods {
+  margin-top: 1rem;
+}
+
+.import-divider {
+  margin: 1rem 0;
+  text-align: center;
+  color: var(--gray);
+}
+
 nav {
   display: flex;
   flex-wrap: wrap;
