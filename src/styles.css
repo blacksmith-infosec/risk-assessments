@@ -180,6 +180,7 @@
 }
 .feature-card p {
   font-size: 0.98rem;
+  font-weight: normal;
   margin: 0;
   opacity: 0.85;
 }
@@ -581,31 +582,8 @@ nav a.active {
   border-radius: 6px;
   transition: width 0.5s ease;
   box-shadow: 0 0 8px rgba(68, 200, 245, 0.4);
-  width: 0%;
+  width: var(--progress-width, 0%);
 }
-
-/* Dynamic width for progress bars using data attributes */
-.progress-bar[data-width="0"] { width: 0%; }
-.progress-bar[data-width="5"] { width: 5%; }
-.progress-bar[data-width="10"] { width: 10%; }
-.progress-bar[data-width="15"] { width: 15%; }
-.progress-bar[data-width="20"] { width: 20%; }
-.progress-bar[data-width="25"] { width: 25%; }
-.progress-bar[data-width="30"] { width: 30%; }
-.progress-bar[data-width="35"] { width: 35%; }
-.progress-bar[data-width="40"] { width: 40%; }
-.progress-bar[data-width="45"] { width: 45%; }
-.progress-bar[data-width="50"] { width: 50%; }
-.progress-bar[data-width="55"] { width: 55%; }
-.progress-bar[data-width="60"] { width: 60%; }
-.progress-bar[data-width="65"] { width: 65%; }
-.progress-bar[data-width="70"] { width: 70%; }
-.progress-bar[data-width="75"] { width: 75%; }
-.progress-bar[data-width="80"] { width: 80%; }
-.progress-bar[data-width="85"] { width: 85%; }
-.progress-bar[data-width="90"] { width: 90%; }
-.progress-bar[data-width="95"] { width: 95%; }
-.progress-bar[data-width="100"] { width: 100%; }
 
 /* Question Items Modern */
 .question-item-modern {
@@ -746,111 +724,10 @@ nav a.active {
   height: 100%;
   border-radius: 4px;
   transition: width 0.5s ease;
-  width: 0%;
+  width: var(--progress-width, 0%);
 }
 
-/* Dynamic width for category progress bars */
-.category-progress-fill[data-width="0"] { width: 0%; }
-.category-progress-fill[data-width="1"] { width: 1%; }
-.category-progress-fill[data-width="2"] { width: 2%; }
-.category-progress-fill[data-width="3"] { width: 3%; }
-.category-progress-fill[data-width="4"] { width: 4%; }
-.category-progress-fill[data-width="5"] { width: 5%; }
-.category-progress-fill[data-width="6"] { width: 6%; }
-.category-progress-fill[data-width="7"] { width: 7%; }
-.category-progress-fill[data-width="8"] { width: 8%; }
-.category-progress-fill[data-width="9"] { width: 9%; }
-.category-progress-fill[data-width="10"] { width: 10%; }
-.category-progress-fill[data-width="11"] { width: 11%; }
-.category-progress-fill[data-width="12"] { width: 12%; }
-.category-progress-fill[data-width="13"] { width: 13%; }
-.category-progress-fill[data-width="14"] { width: 14%; }
-.category-progress-fill[data-width="15"] { width: 15%; }
-.category-progress-fill[data-width="16"] { width: 16%; }
-.category-progress-fill[data-width="17"] { width: 17%; }
-.category-progress-fill[data-width="18"] { width: 18%; }
-.category-progress-fill[data-width="19"] { width: 19%; }
-.category-progress-fill[data-width="20"] { width: 20%; }
-.category-progress-fill[data-width="21"] { width: 21%; }
-.category-progress-fill[data-width="22"] { width: 22%; }
-.category-progress-fill[data-width="23"] { width: 23%; }
-.category-progress-fill[data-width="24"] { width: 24%; }
-.category-progress-fill[data-width="25"] { width: 25%; }
-.category-progress-fill[data-width="26"] { width: 26%; }
-.category-progress-fill[data-width="27"] { width: 27%; }
-.category-progress-fill[data-width="28"] { width: 28%; }
-.category-progress-fill[data-width="29"] { width: 29%; }
-.category-progress-fill[data-width="30"] { width: 30%; }
-.category-progress-fill[data-width="31"] { width: 31%; }
-.category-progress-fill[data-width="32"] { width: 32%; }
-.category-progress-fill[data-width="33"] { width: 33%; }
-.category-progress-fill[data-width="34"] { width: 34%; }
-.category-progress-fill[data-width="35"] { width: 35%; }
-.category-progress-fill[data-width="36"] { width: 36%; }
-.category-progress-fill[data-width="37"] { width: 37%; }
-.category-progress-fill[data-width="38"] { width: 38%; }
-.category-progress-fill[data-width="39"] { width: 39%; }
-.category-progress-fill[data-width="40"] { width: 40%; }
-.category-progress-fill[data-width="41"] { width: 41%; }
-.category-progress-fill[data-width="42"] { width: 42%; }
-.category-progress-fill[data-width="43"] { width: 43%; }
-.category-progress-fill[data-width="44"] { width: 44%; }
-.category-progress-fill[data-width="45"] { width: 45%; }
-.category-progress-fill[data-width="46"] { width: 46%; }
-.category-progress-fill[data-width="47"] { width: 47%; }
-.category-progress-fill[data-width="48"] { width: 48%; }
-.category-progress-fill[data-width="49"] { width: 49%; }
-.category-progress-fill[data-width="50"] { width: 50%; }
-.category-progress-fill[data-width="51"] { width: 51%; }
-.category-progress-fill[data-width="52"] { width: 52%; }
-.category-progress-fill[data-width="53"] { width: 53%; }
-.category-progress-fill[data-width="54"] { width: 54%; }
-.category-progress-fill[data-width="55"] { width: 55%; }
-.category-progress-fill[data-width="56"] { width: 56%; }
-.category-progress-fill[data-width="57"] { width: 57%; }
-.category-progress-fill[data-width="58"] { width: 58%; }
-.category-progress-fill[data-width="59"] { width: 59%; }
-.category-progress-fill[data-width="60"] { width: 60%; }
-.category-progress-fill[data-width="61"] { width: 61%; }
-.category-progress-fill[data-width="62"] { width: 62%; }
-.category-progress-fill[data-width="63"] { width: 63%; }
-.category-progress-fill[data-width="64"] { width: 64%; }
-.category-progress-fill[data-width="65"] { width: 65%; }
-.category-progress-fill[data-width="66"] { width: 66%; }
-.category-progress-fill[data-width="67"] { width: 67%; }
-.category-progress-fill[data-width="68"] { width: 68%; }
-.category-progress-fill[data-width="69"] { width: 69%; }
-.category-progress-fill[data-width="70"] { width: 70%; }
-.category-progress-fill[data-width="71"] { width: 71%; }
-.category-progress-fill[data-width="72"] { width: 72%; }
-.category-progress-fill[data-width="73"] { width: 73%; }
-.category-progress-fill[data-width="74"] { width: 74%; }
-.category-progress-fill[data-width="75"] { width: 75%; }
-.category-progress-fill[data-width="76"] { width: 76%; }
-.category-progress-fill[data-width="77"] { width: 77%; }
-.category-progress-fill[data-width="78"] { width: 78%; }
-.category-progress-fill[data-width="79"] { width: 79%; }
-.category-progress-fill[data-width="80"] { width: 80%; }
-.category-progress-fill[data-width="81"] { width: 81%; }
-.category-progress-fill[data-width="82"] { width: 82%; }
-.category-progress-fill[data-width="83"] { width: 83%; }
-.category-progress-fill[data-width="84"] { width: 84%; }
-.category-progress-fill[data-width="85"] { width: 85%; }
-.category-progress-fill[data-width="86"] { width: 86%; }
-.category-progress-fill[data-width="87"] { width: 87%; }
-.category-progress-fill[data-width="88"] { width: 88%; }
-.category-progress-fill[data-width="89"] { width: 89%; }
-.category-progress-fill[data-width="90"] { width: 90%; }
-.category-progress-fill[data-width="91"] { width: 91%; }
-.category-progress-fill[data-width="92"] { width: 92%; }
-.category-progress-fill[data-width="93"] { width: 93%; }
-.category-progress-fill[data-width="94"] { width: 94%; }
-.category-progress-fill[data-width="95"] { width: 95%; }
-.category-progress-fill[data-width="96"] { width: 96%; }
-.category-progress-fill[data-width="97"] { width: 97%; }
-.category-progress-fill[data-width="98"] { width: 98%; }
-.category-progress-fill[data-width="99"] { width: 99%; }
-.category-progress-fill[data-width="100"] { width: 100%; }
+/* Dynamic width for category progress bars set via inline styles in component */
 
 /* Score Colors */
 .score-excellent {
@@ -1266,7 +1143,7 @@ nav a.active {
   50% { opacity: 0.8; }
 }
 
-.scanner-success {
+.scanner-complete {
   border-color: var(--green);
 }
 
@@ -1319,7 +1196,7 @@ nav a.active {
   to { transform: rotate(360deg); }
 }
 
-.status-icon-success {
+.status-icon-complete {
   background: var(--green);
   color: var(--white);
 }
@@ -1378,6 +1255,24 @@ nav a.active {
   font-size: 0.9rem;
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
+}
+
+.scanner-source {
+  font-size: 0.8rem;
+  color: var(--gray);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.scanner-source a {
+  color: var(--blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.scanner-source a:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .scanner-summary {
@@ -1647,7 +1542,7 @@ nav a.active {
   word-break: break-word;
 }
 
-.scanner-summary-success {
+.scanner-summary-complete {
   color: var(--green) !important;
 }
 
@@ -1807,5 +1702,9 @@ nav a.active {
   display: block;
   font-size: smaller;
   text-align: center;
+}
+
+.footer-link {
+  color: var(--blue);
 }
 

@@ -243,7 +243,7 @@ describe('Report Component', () => {
       expect(dnsElements.length).toBeGreaterThan(0);
       const emailAuthElements = screen.getAllByText(/Email Authentication/i);
       expect(emailAuthElements.length).toBeGreaterThan(0);
-      expect(screen.getAllByText('success')).toHaveLength(2);
+      expect(screen.getAllByText('complete')).toHaveLength(2);
     });
 
     it('renders scanner interpretations', () => {
@@ -277,7 +277,7 @@ describe('Report Component', () => {
       aggregate.scanners.push({
         id: 'securityHeaders',
         label: 'Security Headers',
-        status: 'success',
+        status: 'complete',
         startedAt: new Date().toISOString(),
         finishedAt: new Date().toISOString(),
         summary: 'Grade A',

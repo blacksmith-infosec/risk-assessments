@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useAppState } from '../../context/AppStateContext';
 import { SCANNERS, interpretScannerResult } from '../../utils/domainScannerFramework';
 import { TrackedButton } from '../TrackedButton';
-import { TrackedLink } from '../TrackedLink';
 import { trackFormSubmit } from '../../utils/analytics';
 import Footer from '../Footer';
 
@@ -56,7 +55,7 @@ const DomainScanner = () => {
             // Status icons
             const getStatusIcon = () => {
               switch (status) {
-                case 'success':
+                case 'complete':
                   return '✓';
                 case 'error':
                   return '✕';
@@ -93,25 +92,20 @@ const DomainScanner = () => {
                   <span className='status-text'>{status}</span>
                 </div>
                 <div className='scanner-description'>{s.description}</div>
+                {prog?.dataSource && (
+                  <div className='scanner-source'>
+                    Data source:{' '}
+                    <a href={prog.dataSource.url} target='_blank' rel='noopener noreferrer'>
+                      {prog.dataSource.name}
+                    </a>
+                  </div>
+                )}
                 {prog && prog.summary && <div className='scanner-summary'>{prog.summary}</div>}
 
                 {interpretation && (
                   <div className={`interpretation interpretation-${interpretation.severity}`}>
                     <div className='interpretation-message'>{interpretation.message}</div>
                     <div className='interpretation-recommendation'>{interpretation.recommendation}</div>
-                    {s.id === 'securityHeaders' && prog?.data &&
-                     (prog.data as { testUrl?: string }).testUrl ? (
-                      <div className='external-link'>
-                        <TrackedLink
-                          href={(prog.data as { testUrl?: string }).testUrl!}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='btn-link'
-                        >
-                          📊 View Full Report on SecurityHeaders.com →
-                        </TrackedLink>
-                      </div>
-                    ) : null}
                   </div>
                 )}
 

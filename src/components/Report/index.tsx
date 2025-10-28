@@ -87,7 +87,7 @@ const Report: React.FC = () => {
                 <div className='category-progress-bar'>
                   <div
                     className={`category-progress-fill ${getScoreColor(c.percent)}`}
-                    data-width={c.percent}
+                    style={{ '--progress-width': `${c.percent}%` } as React.CSSProperties}
                   />
                 </div>
               </div>

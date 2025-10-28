@@ -76,29 +76,3 @@ export const deriveIssues = (scan: Partial<DomainScanResult>): string[] => {
   if ((scan.dkimSelectorsFound || []).length === 0) issues.push('No DKIM selectors detected (heuristic)');
   return issues;
 };
-
-export const runDomainAssessment = async (domain: string): Promise<DomainScanResult> => {
-  const trimmed = domain.trim().toLowerCase();
-  const dnsTypes = ['A', 'AAAA', 'MX', 'TXT', 'CNAME'];
-  const dnsResults: DNSRecordResult[] = [];
-  for (const t of dnsTypes) {
-    const r = await fetchDNS(trimmed, t);
-    if (r) dnsResults.push(r);
-  }
-  const txtRecords = dnsResults.find((d) => d.type === 'TXT')?.data || [];
-  const spf = extractSPF(txtRecords);
-  const dmarc = await fetchDMARC(trimmed);
-  const dkimSelectorsFound = await checkDKIM(trimmed);
-  const certificates = await fetchCertificates(trimmed);
-  const partial: Partial<DomainScanResult> = {
-    domain: trimmed,
-    timestamp: new Date().toISOString(),
-    dns: dnsResults,
-    spf,
-    dmarc,
-    dkimSelectorsFound,
-    certificates,
-  };
-  const issues = deriveIssues(partial);
-  return { ...(partial as DomainScanResult), issues };
-};

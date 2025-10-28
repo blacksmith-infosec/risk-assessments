@@ -82,7 +82,7 @@ export const createSampleScannerAggregate = (domain: string = 'example.com'): Do
     {
       id: 'dns',
       label: 'DNS Records',
-      status: 'success',
+      status: 'complete',
       startedAt: new Date().toISOString(),
       finishedAt: new Date().toISOString(),
       summary: '5 record types queried',
@@ -92,7 +92,7 @@ export const createSampleScannerAggregate = (domain: string = 'example.com'): Do
     {
       id: 'emailAuth',
       label: 'Email Authentication',
-      status: 'success',
+      status: 'complete',
       startedAt: new Date().toISOString(),
       finishedAt: new Date().toISOString(),
       summary: 'SPF found, DMARC missing',

@@ -71,12 +71,15 @@ describe('exportReport', () => {
       const html = generateWordHTML({
         score: sampleScore,
         risks,
-        bestPractices: []
+        bestPractices: ['Follow best practice A', 'Implement best practice B']
       });
 
       expect(html).toContain('Identified Risks');
       expect(html).toContain('Risk 1: High severity issue');
       expect(html).toContain('Risk 2: Medium severity issue');
+      expect(html).toContain('Best Practices');
+      expect(html).toContain('Follow best practice A');
+      expect(html).toContain('Implement best practice B');
     });
 
     it('shows empty state message when no risks', () => {
@@ -98,7 +101,7 @@ describe('exportReport', () => {
           {
             id: 'dns',
             label: 'DNS Records',
-            status: 'success',
+            status: 'complete',
             startedAt: new Date().toISOString(),
             finishedAt: new Date().toISOString(),
             summary: '5 record types queried',
@@ -129,7 +132,7 @@ describe('exportReport', () => {
           {
             id: 'emailAuth',
             label: 'Email Authentication',
-            status: 'success',
+            status: 'complete',
             startedAt: new Date().toISOString(),
             finishedAt: new Date().toISOString(),
             summary: 'SPF found, DMARC missing',
@@ -158,7 +161,7 @@ describe('exportReport', () => {
           {
             id: 'securityHeaders',
             label: 'Security Headers',
-            status: 'success',
+            status: 'complete',
             startedAt: new Date().toISOString(),
             finishedAt: new Date().toISOString(),
             summary: 'Grade A',

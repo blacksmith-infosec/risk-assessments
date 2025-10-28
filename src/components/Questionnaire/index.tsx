@@ -52,7 +52,7 @@ const Questionnaire: React.FC = () => {
           </div>
         </div>
         <div className='progress-bar-container'>
-          <div className='progress-bar' data-width={progressPercent} />
+          <div className='progress-bar' style={{ '--progress-width': `${progressPercent}%` } as React.CSSProperties} />
         </div>
       </div>
 
@@ -97,7 +97,7 @@ const Questionnaire: React.FC = () => {
               <div className='category-progress-bar'>
                 <div
                   className={`category-progress-fill ${getScoreColor(c.percent)}`}
-                  data-width={c.percent}
+                  style={{ '--progress-width': `${c.percent}%` } as React.CSSProperties}
                 />
               </div>
             </div>

@@ -1,7 +1,7 @@
 // Extensible domain scanning types allowing independent scanner execution.
 // Adding a new scanner: implement DomainScanner definition and add to SCANNERS array.
 
-export type ScannerStatus = 'idle' | 'running' | 'success' | 'error';
+export type ScannerStatus = 'idle' | 'running' | 'complete' | 'error';
 
 export interface BaseScannerResult {
   // Raw data captured by the scanner; shape varies.
@@ -21,6 +21,11 @@ export interface DomainScanner {
   deriveIssues?: (result: BaseScannerResult, domain: string) => string[];
   // Optional priority/order weight (lower first); default appended order.
   order?: number;
+  // Optional data source attribution
+  dataSource?: {
+    name: string;
+    url: string;
+  };
 }
 
 export interface ExecutedScannerResult extends BaseScannerResult {
@@ -30,6 +35,10 @@ export interface ExecutedScannerResult extends BaseScannerResult {
   startedAt: string;
   finishedAt?: string;
   error?: string;
+  dataSource?: {
+    name: string;
+    url: string;
+  };
 }
 
 export interface DomainScanAggregate {

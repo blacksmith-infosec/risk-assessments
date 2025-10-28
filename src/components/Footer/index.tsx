@@ -7,14 +7,16 @@ const Footer: React.FC = () => (
       <div className='footer-text'>
         Built with ❤️ by{' '}
         <TrackedLink
+          className='footer-link'
           href='https://blacksmithinfosec.com/?utm_source=risk-assessment-tool'
-          target='_blank'
           rel='noopener noreferrer'
+          target='_blank'
         >
           Blacksmith InfoSec
         </TrackedLink>
         . This tool is free to use and{' '}
         <TrackedLink
+          className='footer-link'
           href='https://github.com/blacksmithinfosec/risk-assessments'
           target='_blank'
           rel='noopener noreferrer'
@@ -23,6 +25,7 @@ const Footer: React.FC = () => (
         </TrackedLink>
         . Have a suggestion or found a bug?{' '}
         <TrackedLink
+          className='footer-link'
           href='https://github.com/blacksmithinfosec/risk-assessments/issues'
           target='_blank'
           rel='noopener noreferrer'
@@ -39,7 +42,7 @@ const Footer: React.FC = () => (
       >
         <img
           alt='Blacksmith InfoSec'
-          src='https://assets.blacksmithinfosec.com/images/logos/icon/Bright_Blue.jpg'
+          src='https://assets.blacksmithinfosec.com/images/logos/icon/Bright_Blue.png'
           className='footer-logo'
         />
       </TrackedLink>

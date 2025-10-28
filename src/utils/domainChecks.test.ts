@@ -7,7 +7,6 @@ import {
   fetchTXT,
   fetchCertificates,
   deriveIssues,
-  runDomainAssessment,
 } from './domainChecks';
 
 // Mock fetch globally
@@ -288,74 +287,5 @@ describe('deriveIssues', () => {
     };
     const issues = deriveIssues(scan);
     expect(issues).toHaveLength(0);
-  });
-});
-
-describe('runDomainAssessment', () => {
-  it('should run full domain assessment', async () => {
-    // Mock all DNS calls
-    (global.fetch as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce({ // A record
-        ok: true,
-        json: async () => ({ Answer: [{ data: '192.0.2.1' }] }),
-      })
-      .mockResolvedValueOnce({ // AAAA record
-        ok: true,
-        json: async () => ({}),
-      })
-      .mockResolvedValueOnce({ // MX record
-        ok: true,
-        json: async () => ({ Answer: [{ data: 'mail.example.com' }] }),
-      })
-      .mockResolvedValueOnce({ // TXT record
-        ok: true,
-        json: async () => ({ Answer: [{ data: 'v=spf1 ~all' }] }),
-      })
-      .mockResolvedValueOnce({ // CNAME record
-        ok: true,
-        json: async () => ({}),
-      })
-      .mockResolvedValueOnce({ // DMARC
-        ok: true,
-        json: async () => ({ Answer: [{ data: 'v=DMARC1; p=reject' }] }),
-      })
-      .mockResolvedValueOnce({ // DKIM default
-        ok: true,
-        json: async () => ({}),
-      })
-      .mockResolvedValueOnce({ // DKIM selector1
-        ok: true,
-        json: async () => ({}),
-      })
-      .mockResolvedValueOnce({ // DKIM selector2
-        ok: true,
-        json: async () => ({}),
-      })
-      .mockResolvedValueOnce({ // Certificates
-        ok: true,
-        json: async () => [{ id: 1, name: 'example.com' }],
-      })
-      .mockRejectedValueOnce(new Error('CORS')); // Security headers
-
-    const result = await runDomainAssessment('Example.COM  ');
-
-    expect(result.domain).toBe('example.com');
-    expect(result.timestamp).toBeDefined();
-    expect(result.dns).toBeDefined();
-    expect(result.spf).toBe('v=spf1 ~all');
-    expect(result.dmarc).toBe('v=DMARC1; p=reject');
-    expect(result.dkimSelectorsFound).toEqual([]);
-    expect(result.certificates).toBeDefined();
-    expect(result.issues).toBeDefined();
-  });
-
-  it('should trim and lowercase domain', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
-    });
-
-    const result = await runDomainAssessment('  EXAMPLE.COM  ');
-    expect(result.domain).toBe('example.com');
   });
 });

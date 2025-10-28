@@ -3,16 +3,29 @@ import { useAppState } from '../../context/AppStateContext';
 import { TrackedButton } from '../TrackedButton';
 import { trackImport } from '../../utils/analytics';
 import Footer from '../Footer';
+import { Toast, ToastType } from '../Toast';
+
+interface ToastState {
+  message: string;
+  type: ToastType;
+}
 
 const Import = () => {
   const { importJSON } = useAppState();
   const [raw, setRaw] = useState('');
-  const [status, setStatus] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const showToast = (message: string, type: ToastType) => {
+    setToast({ message, type });
+  };
 
   const onImport = () => {
     const ok = importJSON(raw);
-    setStatus(ok ? 'Import successful' : 'Invalid JSON');
+    showToast(
+      ok ? '✓ Import successful!' : '✕ Invalid JSON format',
+      ok ? 'success' : 'error'
+    );
     trackImport('json', ok);
   };
 
@@ -22,14 +35,14 @@ const Import = () => {
 
     // Validate file type
     if (!file.name.endsWith('.json')) {
-      setStatus('Please select a JSON file');
+      showToast('Please select a JSON file', 'error');
       return;
     }
 
     // Validate file size (e.g., max 5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      setStatus('File is too large (max 5MB)');
+      showToast('File is too large (max 5MB)', 'error');
       return;
     }
 
@@ -38,11 +51,14 @@ const Import = () => {
       const content = e.target?.result as string;
       setRaw(content);
       const ok = importJSON(content);
-      setStatus(ok ? 'Import successful' : 'Invalid JSON');
+      showToast(
+        ok ? '✓ File imported successfully!' : '✕ Invalid JSON format',
+        ok ? 'success' : 'error'
+      );
       trackImport('json', ok);
     };
     reader.onerror = () => {
-      setStatus('Error reading file');
+      showToast('Error reading file', 'error');
     };
     reader.readAsText(file);
 
@@ -92,7 +108,13 @@ const Import = () => {
         </div>
       </div>
 
-      {status && <div className='status'>{status}</div>}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       <Footer />
     </div>
   );
