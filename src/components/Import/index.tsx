@@ -56,12 +56,12 @@ const Import = () => {
     <div className='panel'>
       <h2>Data Import / Export</h2>
       <p>Use this section to restore a previous assessment or download current results.</p>
-      
+
       <div className='import-methods'>
         <div className='file-upload'>
           <label htmlFor='file-input'>
-            <TrackedButton 
-              trackingName='upload_json_file' 
+            <TrackedButton
+              trackingName='upload_json_file'
               onClick={() => fileInputRef.current?.click()}
             >
               Upload JSON File

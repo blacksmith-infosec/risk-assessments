@@ -71,18 +71,18 @@ const CategoryRadarChart: React.FC<CategoryRadarChartProps> = ({ categories }) =
   //  --lightgray (grid lines)
   //  --text-primary (labels)
   // For dark mode, toggling the 'dark' class on <html> swaps the variable set.
+  // Note: When printing, CSS @media print rules will override text colors to ensure readability.
   const baseTheme = getChartTheme();
-  // For dark mode we may want to override grid/text if CSS variables provide distinct values.
+
   const theme = {
     ...baseTheme,
-    // If dark mode ensure text uses current computed primary text color.
+    // Use CSS variables for text so it adapts to light/dark mode
+    // Print styles will override this to ensure dark text on white paper
     text: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || baseTheme.text,
     grid: darkMode
       ? getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim() || baseTheme.grid
       : baseTheme.grid,
-  };
-
-  return (
+  };  return (
     <div className='radar-chart-container'>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={chartData}>

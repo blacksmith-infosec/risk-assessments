@@ -163,6 +163,18 @@ export const generateWordHTML = (options: ExportReportOptions): string => {
     htmlContent += '  </ul>\n';
   }
 
+  // Best Practices Confirmed
+  htmlContent += '\n  <h2>Best Practices Confirmed</h2>\n';
+  if (options.bestPractices.length === 0) {
+    htmlContent += '  <p><em>No best practices confirmed yet.</em></p>\n';
+  } else {
+    htmlContent += '  <ul>\n';
+    options.bestPractices.forEach((bp) => {
+      htmlContent += `    <li>${bp}</li>\n`;
+    });
+    htmlContent += '  </ul>\n';
+  }
+
   // Limitations
   htmlContent += '\n  <div class="limitations">' +
     '\n    <h2>Limitations</h2>' +

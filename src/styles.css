@@ -340,7 +340,7 @@ button:disabled {
 
 .disclaimer {
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--darkblue);
 }
 
 .recommendations li {
@@ -1014,7 +1014,7 @@ nav a.active {
 }
 
 .btn-danger:hover {
-  background: #c0392b;
+  background: var(--red);
   transform: translateY(-1px);
 }
 
@@ -1134,14 +1134,20 @@ nav a.active {
   .export-actions,
   .actions,
   .toggle-row {
-    display: none !important;
+    display: none;
   }
   body, #root {
-    background: white !important;
+    background: white;
   }
   .panel, .app-panel, .home-panel {
     box-shadow: none;
-    border: 1px solid #ddd;
+    border: 1px solid var(--lightgray);
+  }
+
+  /* Force all SVG text elements (including Recharts) to use dark text when printing */
+  svg text,
+  svg tspan {
+    fill: #231F20;
   }
 }
 
@@ -1173,7 +1179,7 @@ nav a.active {
   font-size: 1rem;
   font-weight: 600;
   background: var(--accent);
-  color: white;
+  color: var(--white);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -1315,12 +1321,12 @@ nav a.active {
 
 .status-icon-success {
   background: var(--green);
-  color: white;
+  color: var(--white);
 }
 
 .status-icon-error {
   background: var(--red);
-  color: white;
+  color: var(--white);
 }
 
 .status-text {
@@ -1345,27 +1351,27 @@ nav a.active {
 
 .severity-success {
   background: var(--green);
-  color: white;
+  color: var(--white);
 }
 
 .severity-info {
   background: var(--blue);
-  color: white;
+  color: var(--white);
 }
 
 .severity-warning {
   background: var(--yellow);
-  color: white;
+  color: var(--white);
 }
 
 .severity-critical {
   background: var(--red);
-  color: white;
+  color: var(--white);
 }
 
 .severity-error {
   background: var(--darkgray);
-  color: white;
+  color: var(--white);
 }
 
 .scanner-description {
@@ -1584,7 +1590,7 @@ nav a.active {
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   background: var(--accent);
-  color: white;
+  color: var(--white);
   text-decoration: none;
   border-radius: 8px;
   font-weight: 600;
@@ -1705,12 +1711,12 @@ nav a.active {
 
 .scanner-card-status-success {
   background: var(--green);
-  color: white;
+  color: var(--white);
 }
 
 .scanner-card-status-error {
   background: var(--red);
-  color: white;
+  color: var(--white);
 }
 
 .scanner-card-summary {
