@@ -134,6 +134,17 @@ const Report: React.FC = () => {
                         {sc.issues.map((iss) => <li key={iss}>{iss}</li>)}
                       </ul>
                     )}
+                    {sc.id === 'sslLabs' && sc.data && (sc.data as { testUrl?: string }).testUrl ? (
+                      <div className='scanner-card-link'>
+                        <TrackedLink
+                          href={(sc.data as { testUrl?: string }).testUrl!}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          Full SSL/TLS analysis ↗
+                        </TrackedLink>
+                      </div>
+                    ) : null}
                     {sc.id === 'securityHeaders' && sc.data && (sc.data as { testUrl?: string }).testUrl ? (
                       <div className='scanner-card-link'>
                         <TrackedLink

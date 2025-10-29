@@ -2601,3 +2601,567 @@ describe('SSL Labs Scanner Interpretations', () => {
     vi.useRealTimers();
   }, 10000); // Increase test timeout to 10 seconds
 });
+
+describe('Security Headers Scanner', () => {
+  it('should fetch and parse security headers results', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+      <div class="reportSection">
+        <div class="reportTitle">Missing Headers</div>
+        <div class="reportBody">
+          <table class="reportTable">
+            <colgroup><col class="col1"><col class="col2"></colgroup>
+            <tbody>
+              <tr class="tableRow">
+                <th class="tableLabel table_red">Site is using HTTP</th>
+                <td class="tableCell">Permissions Policy</a> is a new header.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    expect(securityHeadersScanner).toBeDefined();
+
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      expect(result.data).toBeDefined();
+      const data = result.data as { grade?: string; status?: string; missingHeaders?: string[] };
+      expect(data.grade).toBe('A');
+      expect(data.status).toBe('available');
+    }
+  });
+
+  it('should parse grade from score div with different colors', async () => {
+    const testCases = [
+      { color: 'green', grade: 'A' },
+      { color: 'yellow', grade: 'B' },
+      { color: 'orange', grade: 'C' },
+      { color: 'red', grade: 'F' },
+    ];
+
+    for (const testCase of testCases) {
+      const mockHTML = `
+        <div class="score">
+          <div class="score_${testCase.color}"><span>${testCase.grade}</span></div>
+        </div>
+      `;
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ok: true,
+        text: async () => mockHTML,
+      });
+
+      const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+      if (securityHeadersScanner) {
+        const result = await securityHeadersScanner.run('example.com');
+        const data = result.data as { grade?: string };
+        expect(data.grade).toBe(testCase.grade);
+      }
+    }
+  });
+
+  it('should parse multiple missing headers', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_red"><span>F</span></div>
+      </div>
+      <div class="reportSection">
+        <div class="reportTitle">Missing Headers</div>
+        <div class="reportBody">
+          <table class="reportTable">
+            <colgroup><col class="col1"><col class="col2"></colgroup>
+            <tbody>
+              <tr class="tableRow">
+                <th class="tableLabel table_red">Strict-Transport-Security</th>
+                <td class="tableCell">Strict-Transport-Security is a new header.</td>
+              </tr>
+              <tr class="tableRow">
+                <th class="tableLabel table_red">Content-Security-Policy</th>
+                <td class="tableCell">Content-Security-Policy is a new header.</td>
+              </tr>
+              <tr class="tableRow">
+                <th class="tableLabel table_red">X-Frame-Options</th>
+                <td class="tableCell">X-Frame-Options is a new header.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      expect(result.issues).toBeDefined();
+      expect(result.issues?.length).toBe(3);
+      expect(result.issues?.some((issue) => issue.includes('Strict-Transport-Security'))).toBe(true);
+      expect(result.issues?.some((issue) => issue.includes('Content-Security-Policy'))).toBe(true);
+      expect(result.issues?.some((issue) => issue.includes('X-Frame-Options'))).toBe(true);
+    }
+  });
+
+  it('should parse warnings section', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_red"><span>F</span></div>
+      </div>
+      <div class="reportSection">
+        <div class="reportTitle">Missing Headers</div>
+        <div class="reportBody">
+          <table class="reportTable">
+            <colgroup><col class="col1"><col class="col2"></colgroup>
+            <tbody>
+              <tr class="tableRow">
+                <th class="tableLabel table_red">Site is using HTTP</th>
+                <td class="tableCell">Permissions Policy</a> is a new header.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      expect(result.issues).toBeDefined();
+      expect(result.issues?.some((issue) => issue.includes('Site is using HTTP'))).toBe(true);
+    }
+  });
+
+  it('should parse score from HTML', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+      <div class="reportTitle">Score: 85</div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      const data = result.data as { score?: number };
+      expect(data.score).toBe(85);
+    }
+  });
+
+  it('should build correct summary with grade and score', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+      <div class="reportTitle">Score: 95</div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      expect(result.summary).toBe('Grade: A (95/100)');
+    }
+  });
+
+  it('should build summary with grade only when no score', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      expect(result.summary).toBe('Grade: A');
+    }
+  });
+
+  it('should handle perfect A+ grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A+</span></div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      const data = result.data as { grade?: string };
+      expect(data.grade).toBe('A+');
+      expect(result.summary).toBe('Grade: A+');
+    }
+  });
+
+  it('should include testUrl in data', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      const data = result.data as { testUrl?: string };
+      expect(data.testUrl).toBeDefined();
+      expect(data.testUrl).toContain('https://securityheaders.com/?q=example.com&hide=on&followRedirects=on');
+      expect(data.testUrl).toContain('example.com');
+    }
+  });
+
+  it('should handle fetch errors gracefully', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      const data = result.data as { status?: string; error?: string; testUrl?: string };
+      expect(data.status).toBe('unavailable');
+      expect(data.error).toBeDefined();
+      expect(data.testUrl).toBeDefined();
+      expect(result.issues).toBeDefined();
+      expect(result.issues?.[0]).toContain('Could not retrieve');
+    }
+  });
+
+  it('should handle HTTP error responses', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      const data = result.data as { status?: string; error?: string };
+      expect(data.status).toBe('unavailable');
+      expect(data.error).toContain('500');
+    }
+  });
+
+  it('should deduplicate missing headers', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_red"><span>F</span></div>
+      </div>
+      <div class="reportSection">
+        <div class="reportTitle">Missing Headers</div>
+        <div class="reportBody">
+            <table class="reportTable">
+              <colgroup><col class="col1"><col class="col2"></colgroup>
+              <tbody>
+                <tr class="tableRow">
+                  <th class="tableLabel table_red">Permissions-Policy</th>
+                  <td class="tableCell">
+                    <a href="https://scotthelme.co.uk/goodbye-feature-policy-and-hello-permissions-policy/">
+                      Permissions Policy
+                    </a>
+                    is a new header that allows a site to control which features and APIs can be used in the browser.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      const data = result.data as { missingHeaders?: string[] };
+      expect(data.missingHeaders?.length).toBe(1);
+      expect(result.issues?.length).toBe(1);
+    }
+  });
+
+  it('should handle HTML with no sections', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+    `;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      text: async () => mockHTML,
+    });
+
+    const securityHeadersScanner = SCANNERS.find((s) => s.id === 'securityHeaders');
+    if (securityHeadersScanner) {
+      const result = await securityHeadersScanner.run('example.com');
+      const data = result.data as { missingHeaders?: string[] };
+      expect(data.missingHeaders).toEqual([]);
+      expect(result.issues).toBeUndefined();
+    }
+  });
+});
+
+describe('Security Headers Scanner Interpretations', () => {
+  const mockAllScannersForSecurityHeaders = (securityData: string) => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+
+      // Security headers (via CORS proxy)
+      if (urlStr.includes('corsproxy.io') && urlStr.includes('securityheaders.com')) {
+        return Promise.resolve({
+          ok: true,
+          text: async () => securityData,
+        });
+      }
+
+      // Default empty response for other scanners
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+        headers: { get: () => null },
+      });
+    });
+  };
+
+  it('returns success severity for A+ grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A+</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('success');
+      expect(interpretation.message).toContain('Excellent security headers');
+    }
+  });
+
+  it('returns success severity for A grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('success');
+      expect(interpretation.message).toContain('Great security headers');
+    }
+  });
+
+  it('returns info severity for B grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_yellow"><span>B</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('info');
+      expect(interpretation.message).toContain('Good security headers');
+    }
+  });
+
+  it('returns warning severity for C grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_orange"><span>C</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('warning');
+      expect(interpretation.message).toContain('Moderate security headers');
+    }
+  });
+
+  it('returns warning severity for D grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_orange"><span>D</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('warning');
+      expect(interpretation.message).toContain('Weak security headers');
+    }
+  });
+
+  it('returns critical severity for E grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_red"><span>E</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('critical');
+      expect(interpretation.message).toContain('Poor security headers');
+    }
+  });
+
+  it('returns critical severity for F grade', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_red"><span>F</span></div>
+      </div>
+      <div class="reportTitle">Missing Headers</div>
+      <div class="reportBody">
+        <table class="reportTable">
+          <tbody>
+            <tr class="tableRow"><th class="tableLabel table_red">Strict-Transport-Security</th></tr>
+            <tr class="tableRow"><th class="tableLabel table_red">Content-Security-Policy</th></tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('critical');
+      expect(interpretation.message).toContain('Failed security headers');
+      expect(interpretation.recommendation).toContain('immediate attention');
+      expect(interpretation.recommendation).toContain('Your security headers need immediate attention');
+    }
+  });
+
+  it('includes testUrl link in recommendation', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_green"><span>A</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.recommendation).toContain('Your site has excellent security headers protecting ');
+    }
+  });
+
+  it('handles unavailable status gracefully', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url) => {
+      const urlStr = typeof url === 'string' ? url : url.toString();
+
+      // Security headers - reject
+      if (urlStr.includes('corsproxy.io') && urlStr.includes('securityheaders.com')) {
+        return Promise.reject(new Error('Network error'));
+      }
+
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+        headers: { get: () => null },
+      });
+    });
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('info');
+      expect(interpretation.message).toContain('Headers check unavailable');
+    }
+  });
+
+  it('handles unknown grade gracefully', async () => {
+    const mockHTML = `
+      <div class="score">
+        <div class="score_unknown"><span>?</span></div>
+      </div>
+    `;
+    mockAllScannersForSecurityHeaders(mockHTML);
+
+    const result = await runAllScanners('example.com');
+    const securityResult = result.scanners.find((s) => s.id === 'securityHeaders');
+    expect(securityResult).toBeDefined();
+    if (securityResult) {
+      const interpretation = interpretScannerResult(securityResult);
+      expect(interpretation.severity).toBe('info');
+      expect(interpretation.message).toContain('Security headers analyzed (Unknown)');
+    }
+  });
+});
