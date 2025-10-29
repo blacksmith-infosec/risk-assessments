@@ -26,6 +26,8 @@ export interface DomainScanner {
     name: string;
     url: string;
   };
+  // Optional custom timeout in milliseconds (defaults to DEFAULT_SCANNER_TIMEOUT)
+  timeout?: number;
 }
 
 export interface ExecutedScannerResult extends BaseScannerResult {

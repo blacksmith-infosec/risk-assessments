@@ -3,7 +3,6 @@ import {
   runAllScanners,
   runScanner,
   interpretScannerResult,
-  setScannerTimeout,
 } from './domainScannerFramework';
 
 // Mock fetch globally
@@ -429,9 +428,16 @@ describe('runScanner', () => {
   });
 
   it('times out when forced very low timeout', async () => {
-    // Force timeout to 1ms and run DNS scanner (which will attempt fetch)
-    setScannerTimeout(1);
-  const dnsId = SCANNERS.find((s) => s.id === 'dns')?.id as string;
+    // Find DNS scanner and store original timeout
+    const dnsScanner = SCANNERS.find((s) => s.id === 'dns');
+    const originalTimeout = dnsScanner?.timeout;
+
+    // Force DNS scanner timeout to 1ms
+    if (dnsScanner) {
+      dnsScanner.timeout = 1;
+    }
+
+    const dnsId = SCANNERS.find((s) => s.id === 'dns')?.id as string;
     // Mock a fetch that never resolves quickly (simulate delay by returning a promise that resolves after 50ms)
     (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
       () => new Promise((resolve) =>
@@ -448,8 +454,11 @@ describe('runScanner', () => {
     const result = await runScanner('example.com', dnsId);
     expect(result.status).toBe('error');
     expect(result.error).toMatch(/timed out/);
-    // Restore default timeout for subsequent tests
-    setScannerTimeout(30000);
+
+    // Restore original timeout
+    if (dnsScanner) {
+      dnsScanner.timeout = originalTimeout;
+    }
   });
 });
 
@@ -2416,13 +2425,13 @@ describe('SSL Labs Scanner', () => {
     const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
     if (sslScanner) {
       const resultPromise = sslScanner.run('example.com');
-      // Advance timers to skip the 5 second wait
-      await vi.advanceTimersByTimeAsync(5000);
+      // Advance timers to skip the 30 second wait (pollInterval)
+      await vi.advanceTimersByTimeAsync(30000);
       const result = await resultPromise;
       expect(result.summary).toContain('No SSL/TLS endpoints found');
     }
     vi.useRealTimers();
-  });
+  }, 10000); // Increase test timeout to 10 seconds
 
   it('should handle ERROR status', async () => {
     const mockResult = {
@@ -2582,13 +2591,13 @@ describe('SSL Labs Scanner Interpretations', () => {
     });
 
     const resultPromise = runScanner('example.com', 'sslLabs');
-    // Advance timers to skip the 5 second wait
-    await vi.advanceTimersByTimeAsync(5000);
+    // Advance timers to skip the 30 second wait (pollInterval)
+    await vi.advanceTimersByTimeAsync(30000);
     const result = await resultPromise;
     const interpretation = interpretScannerResult(result);
     // After polling completes with READY and no endpoints
     expect(interpretation.severity).toBe('info');
     expect(interpretation.message).toContain('SSL/TLS configuration analyzed');
     vi.useRealTimers();
-  });
+  }, 10000); // Increase test timeout to 10 seconds
 });

@@ -45,7 +45,6 @@ const DomainScanner = () => {
       {error && <div className='error'>{error}</div>}
       <div className='modular-results'>
         <h3>Scanners</h3>
-        <div className='error'>More scanners are coming soon!</div>
         <ul className='scanner-list'>
           {SCANNERS.map((s) => {
             const prog = scannerProgress.find((p) => p.id === s.id);

@@ -389,6 +389,7 @@ const dnsScanner: DomainScanner = {
   id: 'dns',
   label: 'DNS Records',
   description: 'Retrieves A, AAAA, MX, TXT, CNAME records and validates configuration',
+  timeout: 5000, // 5 seconds - DNS should be fast
   dataSource: {
     name: 'Google Public DNS',
     url: 'https://dns.google',
@@ -480,6 +481,7 @@ const emailAuthScanner: DomainScanner = {
   id: 'emailAuth',
   label: 'Email Authentication',
   description: 'Validates SPF, DMARC, and DKIM configuration for email security',
+  timeout: 10000, // 10 seconds - multiple DNS lookups
   dataSource: {
     name: 'Google Public DNS',
     url: 'https://dns.google',
@@ -615,6 +617,7 @@ const certificateScanner: DomainScanner = {
   id: 'certificates',
   label: 'SSL/TLS Certificates',
   description: 'Analyzes SSL certificates from public certificate transparency logs',
+  timeout: 15000, // 15 seconds - external API call
   dataSource: {
     name: 'crt.sh',
     url: 'https://crt.sh',
@@ -784,6 +787,7 @@ const rdapScanner: DomainScanner = {
   id: 'rdap',
   label: 'Domain Registration (RDAP)',
   description: 'Retrieves domain registration and DNSSEC information via RDAP',
+  timeout: 10000, // 10 seconds - bootstrap lookup + RDAP query
   dataSource: {
     name: 'RDAP',
     url: 'https://about.rdap.org/',
@@ -988,7 +992,8 @@ const rdapScanner: DomainScanner = {
 const sslLabsScanner: DomainScanner = {
   id: 'sslLabs',
   label: 'SSL/TLS Configuration',
-  description: 'Analyzes SSL/TLS configuration using Qualys SSL Labs (may take 1-2 minutes)',
+  description: 'Analyzes SSL/TLS configuration using Qualys SSL Labs (may take several minutes)',
+  timeout: 600000, // 10 minutes - SSL Labs can take a while with polling
   dataSource: {
     name: 'Qualys SSL Labs',
     url: 'https://www.ssllabs.com/ssltest/',
@@ -1050,7 +1055,15 @@ const sslLabsScanner: DomainScanner = {
       }
 
       // Build the CORS proxy URL with key first, then url parameter
+      // We use corsproxy.io to proxy requests that we can't make directly from the browser. Normally, we would not use
+      // a commercial proxy service for production code. However, since all of these data are publicly available, we are
+      // using this service for convenience in this open source project. If you are forking this code for your own use,
+      // consider hosting your own CORS proxy or making server-side requests instead.
       const proxyUrl = new URL('https://corsproxy.io/');
+      // TODO: Currently, the API documentation for CORS Proxy says a key is required from a non-localhost domain.
+      // However, when the key is provided, their API returns a 403 error with a bad URL, which suggests they are
+      // parsing the querystring incorrectly. For now, we will omit the key to allow things to work, but we expect that
+      // the API will be fixed in the future and this key will be required again.
       // proxyUrl.searchParams.set('key', '54aed9d2');
       proxyUrl.searchParams.set('url', sslLabsUrl.toString());
 
@@ -1067,8 +1080,8 @@ const sslLabsScanner: DomainScanner = {
       let result: SSLLabsResult = await fetchAnalysis(true, false);
 
       // If no cached results or scan in progress, we may need to poll
-      const maxPolls = 60; // Maximum 60 polls (5 minutes at 5 second intervals)
-      const pollInterval = 5000; // 5 seconds
+      const maxPolls = 20; // Maximum 20 polls (10 minutes at 30 second intervals)
+      const pollInterval = 30000; // 30 seconds
       let pollCount = 0;
 
       while (result.status !== 'READY' && result.status !== 'ERROR' && pollCount < maxPolls) {
@@ -1251,14 +1264,16 @@ export const SCANNERS: DomainScanner[] = [
   sslLabsScanner,
 ];
 
-// Execute all scanners sequentially (could be parallel, but sequential eases rate limits & ordering).
+// Execute all scanners in parallel for faster results.
 export const runAllScanners = async (
   domain: string,
   onProgress?: (partial: ExecutedScannerResult[]) => void
 ): Promise<DomainScanAggregate> => {
   const trimmed = domain.trim().toLowerCase();
   const results: ExecutedScannerResult[] = [];
-  for (const scanner of SCANNERS.sort((a,b) => (a.order ?? 999) - (b.order ?? 999))) {
+
+  // Initialize all scanner result objects
+  const scannerPromises = SCANNERS.map((scanner) => {
     const start = new Date().toISOString();
     const base: ExecutedScannerResult = {
       id: scanner.id,
@@ -1271,22 +1286,36 @@ export const runAllScanners = async (
       dataSource: scanner.dataSource,
     };
     results.push(base);
-    onProgress?.([...results]);
-    try {
-      const r = await withTimeout(
-        scanner.run(trimmed),
-        DEFAULT_SCANNER_TIMEOUT,
-        scanner.label
-      );
-      const issues = r.issues || scanner.deriveIssues?.(r, trimmed) || [];
-      Object.assign(base, r, { status: 'complete', issues, finishedAt: new Date().toISOString() });
-    } catch (err: unknown) {
-      base.status = 'error';
-      base.error = err instanceof Error ? err.message : 'Unknown error';
-      base.finishedAt = new Date().toISOString();
-    }
-    onProgress?.([...results]);
-  }
+
+    // Run scanner with its specific timeout (or default)
+    const timeoutMs = scanner.timeout ?? DEFAULT_SCANNER_TIMEOUT;
+
+    return withTimeout(
+      scanner.run(trimmed),
+      timeoutMs,
+      scanner.label
+    )
+      .then((r) => {
+        const issues = r.issues || scanner.deriveIssues?.(r, trimmed) || [];
+        Object.assign(base, r, { status: 'complete', issues, finishedAt: new Date().toISOString() });
+        onProgress?.([...results]); // Notify on completion
+        return base;
+      })
+      .catch((err: unknown) => {
+        base.status = 'error';
+        base.error = err instanceof Error ? err.message : 'Unknown error';
+        base.finishedAt = new Date().toISOString();
+        onProgress?.([...results]); // Notify on error
+        return base;
+      });
+  });
+
+  // Initial progress callback with all scanners in "running" state
+  onProgress?.([...results]);
+
+  // Wait for all scanners to complete (or fail)
+  await Promise.allSettled(scannerPromises);
+
   const allIssues = results.flatMap((r) => r.issues || []);
   return {
     domain: trimmed,
@@ -1301,10 +1330,11 @@ export const runScanner = async (domain: string, scannerId: string): Promise<Exe
   const scanner = SCANNERS.find((s) => s.id === scannerId);
   if (!scanner) throw new Error('Scanner not found: ' + scannerId);
   const start = new Date().toISOString();
+  const timeoutMs = scanner.timeout ?? DEFAULT_SCANNER_TIMEOUT;
   try {
     const r = await withTimeout(
       scanner.run(domain.trim().toLowerCase()),
-      DEFAULT_SCANNER_TIMEOUT,
+      timeoutMs,
       scanner.label
     );
     return {
