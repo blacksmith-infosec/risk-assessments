@@ -90,6 +90,17 @@ describe('runAllScanners', () => {
         });
       }
 
+      // Mock SSL Labs scanner - return cached READY status with no endpoints
+      if (urlStr.includes('ssllabs.com')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            status: 'READY',
+            endpoints: []
+          }),
+        });
+      }
+
       // Default mock for other requests
       return Promise.resolve({
         ok: true,
@@ -1833,8 +1844,13 @@ describe('RDAP Scanner', () => {
       if (urlStr.includes('data.iana.org/rdap/dns.json')) {
         return Promise.resolve({ ok: true, json: async () => mockBootstrap });
       }
-      if (urlStr.includes('rdap.verisign.com')) {
+      // Match the full RDAP URL pattern: https://rdap.verisign.com/com/v1/domain/example.com
+      if (urlStr.includes('rdap.verisign.com') && urlStr.includes('/domain/')) {
         return Promise.resolve({ ok: true, json: async () => domainData });
+      }
+      // Fallback for certificate scanner
+      if (urlStr.includes('crt.sh')) {
+        return Promise.resolve({ ok: true, json: async () => [] });
       }
       return Promise.resolve({ ok: true, json: async () => ({}) });
     });
@@ -2072,8 +2088,8 @@ describe('RDAP Scanner Interpretations', () => {
         return Promise.resolve({ ok: true, json: async () => mockBootstrap });
       }
 
-      // RDAP domain query
-      if (urlStr.includes('rdap.verisign.com')) {
+      // RDAP domain query - must include /domain/ in path
+      if (urlStr.includes('rdap.verisign.com') && urlStr.includes('/domain/')) {
         if (typeof rdapData === 'object' && rdapData !== null && 'ok' in rdapData) {
           return Promise.resolve(rdapData as Response);
         }
@@ -2139,8 +2155,8 @@ describe('RDAP Scanner Interpretations', () => {
     if (rdapResult) {
       const interpretation = interpretScannerResult(rdapResult);
       expect(interpretation.severity).toBe('warning');
-      expect(interpretation.message).toContain('Domain registration has recommendations');
-      expect(interpretation.recommendation).toContain('Review the recommendations below');
+      expect(interpretation.message).toContain('Domain registration needs attention');
+      expect(interpretation.recommendation).toContain('Plan to renew your domain');
     }
   });
 
@@ -2205,8 +2221,374 @@ describe('RDAP Scanner Interpretations', () => {
     expect(rdapResult).toBeDefined();
     if (rdapResult) {
       const interpretation = interpretScannerResult(rdapResult);
+      // DNSSEC disabled creates a warning issue
+      expect(interpretation.severity).toBe('warning');
       expect(interpretation.recommendation).toContain('Review the recommendations below');
     }
   });
 });
 
+describe('SSL Labs Scanner', () => {
+  it('should fetch SSL Labs results from cache', async () => {
+    const mockSSLLabsResult = {
+      status: 'READY',
+      endpoints: [
+        {
+          ipAddress: '192.0.2.1',
+          grade: 'A',
+          hasWarnings: false,
+          isExceptional: false,
+          details: {
+            protocols: [
+              { name: 'TLS', version: '1.2' },
+              { name: 'TLS', version: '1.3' }
+            ],
+            forwardSecrecy: 2,
+            hstsPolicy: {
+              status: 'present',
+              maxAge: 31536000
+            }
+          }
+        }
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockSSLLabsResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.summary).toContain('1 endpoint(s) scanned');
+      expect(result.summary).toContain('A');
+      expect(result.issues).toBeDefined();
+      expect(result.data).toHaveProperty('testUrl');
+    }
+  });
+
+  it('should detect SSL/TLS vulnerabilities', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [
+        {
+          ipAddress: '192.0.2.1',
+          grade: 'C',
+          details: {
+            protocols: [
+              { name: 'SSL', version: '3.0' },
+              { name: 'TLS', version: '1.0' }
+            ],
+            heartbleed: true,
+            poodle: true,
+            vulnBeast: true,
+            forwardSecrecy: 0
+          }
+        }
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('Heartbleed'))).toBe(true);
+      expect(result.issues?.some((i) => i.includes('POODLE'))).toBe(true);
+      expect(result.issues?.some((i) => i.includes('SSL'))).toBe(true);
+      expect(result.issues?.some((i) => i.includes('forward secrecy'))).toBe(true);
+    }
+  });
+
+  it('should detect outdated TLS protocols', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [
+        {
+          ipAddress: '192.0.2.1',
+          grade: 'B',
+          details: {
+            protocols: [
+              { name: 'TLS', version: '1.0' },
+              { name: 'TLS', version: '1.1' },
+              { name: 'TLS', version: '1.2' }
+            ]
+          }
+        }
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('TLS 1.0/1.1'))).toBe(true);
+    }
+  });
+
+  it('should check HSTS configuration', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [
+        {
+          ipAddress: '192.0.2.1',
+          grade: 'A-',
+          details: {
+            hstsPolicy: {
+              status: 'absent'
+            }
+          }
+        }
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('HSTS not configured'))).toBe(true);
+    }
+  });
+
+  it('should warn about short HSTS max-age', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [
+        {
+          ipAddress: '192.0.2.1',
+          grade: 'A-',
+          details: {
+            hstsPolicy: {
+              status: 'present',
+              maxAge: 86400 // 1 day
+            }
+          }
+        }
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('HSTS max-age is too short'))).toBe(true);
+    }
+  });
+
+  it('should handle scan in progress status', async () => {
+    vi.useFakeTimers();
+    let callCount = 0;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      callCount++;
+      // First call: IN_PROGRESS, second call: READY with empty results
+      if (callCount === 1) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ status: 'IN_PROGRESS' })
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          status: 'READY',
+          endpoints: []
+        })
+      });
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const resultPromise = sslScanner.run('example.com');
+      // Advance timers to skip the 5 second wait
+      await vi.advanceTimersByTimeAsync(5000);
+      const result = await resultPromise;
+      expect(result.summary).toContain('No SSL/TLS endpoints found');
+    }
+    vi.useRealTimers();
+  });
+
+  it('should handle ERROR status', async () => {
+    const mockResult = {
+      status: 'ERROR',
+      statusMessage: 'Unable to resolve domain name'
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.summary).toContain('error');
+      expect(result.issues?.some((i) => i.includes('Unable to resolve domain name'))).toBe(true);
+    }
+  });
+
+  it('should handle no endpoints found', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: []
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.summary).toContain('No SSL/TLS endpoints found');
+      expect(result.issues?.some((i) => i.includes('No HTTPS endpoints'))).toBe(true);
+    }
+  });
+
+  it('should handle API errors gracefully', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.summary).toBe('SSL Labs scan failed');
+      expect(result.issues?.some((i) => i.includes('500'))).toBe(true);
+    }
+  });
+
+  it('should report multiple endpoints with different grades', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [
+        {
+          ipAddress: '192.0.2.1',
+          grade: 'A+'
+        },
+        {
+          ipAddress: '192.0.2.2',
+          grade: 'B'
+        }
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const sslScanner = SCANNERS.find((s) => s.id === 'sslLabs');
+    if (sslScanner) {
+      const result = await sslScanner.run('example.com');
+      expect(result.summary).toContain('2 endpoint(s) scanned');
+      expect(result.summary).toContain('A+');
+      expect(result.summary).toContain('B');
+      const data = result.data as { grades?: string[] };
+      expect(data.grades).toContain('A+');
+      expect(data.grades).toContain('B');
+    }
+  });
+});
+
+describe('SSL Labs Scanner Interpretations', () => {
+  it('returns success severity for A+ grade', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [{ ipAddress: '192.0.2.1', grade: 'A+' }]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const result = await runScanner('example.com', 'sslLabs');
+    const interpretation = interpretScannerResult(result);
+    expect(interpretation.severity).toBe('success');
+    expect(interpretation.message).toContain('A+');
+  });
+
+  it('returns warning severity for B grade', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [{ ipAddress: '192.0.2.1', grade: 'B' }]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const result = await runScanner('example.com', 'sslLabs');
+    const interpretation = interpretScannerResult(result);
+    expect(interpretation.severity).toBe('warning');
+    expect(interpretation.recommendation).toContain('could be improved');
+  });
+
+  it('returns critical severity for F grade', async () => {
+    const mockResult = {
+      status: 'READY',
+      endpoints: [{ ipAddress: '192.0.2.1', grade: 'F' }]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => mockResult,
+    });
+
+    const result = await runScanner('example.com', 'sslLabs');
+    const interpretation = interpretScannerResult(result);
+    expect(interpretation.severity).toBe('critical');
+    expect(interpretation.message).toContain('Failed');
+  });
+
+  it('returns info severity when scan is in progress', async () => {
+    vi.useFakeTimers();
+    let callCount = 0;
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(() => {
+      callCount++;
+      // First call: IN_PROGRESS, second call: READY
+      if (callCount === 1) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ status: 'IN_PROGRESS' })
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ status: 'READY', endpoints: [] })
+      });
+    });
+
+    const resultPromise = runScanner('example.com', 'sslLabs');
+    // Advance timers to skip the 5 second wait
+    await vi.advanceTimersByTimeAsync(5000);
+    const result = await resultPromise;
+    const interpretation = interpretScannerResult(result);
+    // After polling completes with READY and no endpoints
+    expect(interpretation.severity).toBe('info');
+    expect(interpretation.message).toContain('SSL/TLS configuration analyzed');
+    vi.useRealTimers();
+  });
+});

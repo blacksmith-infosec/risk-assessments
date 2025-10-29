@@ -106,6 +106,19 @@ const DomainScanner = () => {
                   <div className={`interpretation interpretation-${interpretation.severity}`}>
                     <div className='interpretation-message'>{interpretation.message}</div>
                     <div className='interpretation-recommendation'>{interpretation.recommendation}</div>
+                    {s.id === 'sslLabs' && prog?.data &&
+                     (prog.data as { testUrl?: string }).testUrl ? (
+                      <div className='external-link'>
+                        <a
+                          href={(prog.data as { testUrl?: string }).testUrl!}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='btn-link'
+                        >
+                          📊 View Full SSL Labs Report →
+                        </a>
+                      </div>
+                    ) : null}
                   </div>
                 )}
 
