@@ -1051,7 +1051,7 @@ const sslLabsScanner: DomainScanner = {
 
       // Build the CORS proxy URL with key first, then url parameter
       const proxyUrl = new URL('https://corsproxy.io/');
-      proxyUrl.searchParams.set('key', '54aed9d2');
+      // proxyUrl.searchParams.set('key', '54aed9d2');
       proxyUrl.searchParams.set('url', sslLabsUrl.toString());
 
       const response = await fetch(proxyUrl);
