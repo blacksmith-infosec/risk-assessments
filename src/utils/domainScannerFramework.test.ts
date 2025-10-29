@@ -50,6 +50,46 @@ describe('runAllScanners', () => {
         });
       }
 
+      // Mock IANA RDAP bootstrap service
+      if (urlStr.includes('data.iana.org/rdap/dns.json')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            services: [
+              [['com', 'net'], ['https://rdap.verisign.com/com/v1/']],
+              [['org'], ['https://rdap.publicinterestregistry.org/']],
+              [['io'], ['https://rdap.nic.io/']],
+            ]
+          }),
+        });
+      }
+
+      // Mock RDAP domain lookup (various servers)
+      if (urlStr.includes('rdap.verisign.com') ||
+          urlStr.includes('rdap.publicinterestregistry.org') ||
+          urlStr.includes('rdap.nic.io')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            ldhName: 'example.com',
+            status: ['active'],
+            nameservers: [
+              { ldhName: 'ns1.example.com' },
+              { ldhName: 'ns2.example.com' }
+            ],
+            secureDNS: { delegationSigned: true },
+            events: [
+              { eventAction: 'expiration', eventDate: '2026-08-29T14:17:30Z' },
+              { eventAction: 'registration', eventDate: '2023-08-29T14:17:30Z' }
+            ],
+            entities: [{
+              roles: ['registrar'],
+              vcardArray: ['vcard', [['fn', {}, 'text', 'Example Registrar']]]
+            }]
+          }),
+        });
+      }
+
       // Default mock for other requests
       return Promise.resolve({
         ok: true,
@@ -1775,6 +1815,397 @@ describe('Certificate Scanner Interpretations', () => {
       const interpretation = interpretScannerResult(certResult);
       expect(interpretation.severity).toBe('warning');
       expect(interpretation.recommendation).toContain('Review the certificate issues');
+    }
+  });
+});
+
+describe('RDAP Scanner', () => {
+  // Helper to mock RDAP bootstrap and domain responses
+  const mockRDAPResponse = (domainData: unknown) => {
+    const mockBootstrap = {
+      services: [
+        [['com'], ['https://rdap.verisign.com/com/v1/']]
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('data.iana.org/rdap/dns.json')) {
+        return Promise.resolve({ ok: true, json: async () => mockBootstrap });
+      }
+      if (urlStr.includes('rdap.verisign.com')) {
+        return Promise.resolve({ ok: true, json: async () => domainData });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+  };
+
+  it('should retrieve domain registration information', async () => {
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [
+        { ldhName: 'ns1.example.com' },
+        { ldhName: 'ns2.example.com' }
+      ],
+      secureDNS: { delegationSigned: true },
+      events: [
+        { eventAction: 'expiration', eventDate: '2026-08-29T14:17:30Z' },
+        { eventAction: 'registration', eventDate: '2023-08-29T14:17:30Z' }
+      ],
+      entities: [{
+        roles: ['registrar'],
+        vcardArray: ['vcard', [['fn', {}, 'text', 'Example Registrar']]]
+      }]
+    };
+
+    mockRDAPResponse(mockRDAPData);
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.summary).toContain('Domain: example.com');
+      expect(result.summary).toContain('status: active');
+      expect(result.summary).toContain('expires in');
+      const data = result.data as {
+        ldhName?: string;
+        status?: string[];
+        dnssecEnabled?: boolean;
+        nameservers?: string[];
+      };
+      expect(data.ldhName).toBe('example.com');
+      expect(data.status).toContain('active');
+      expect(data.dnssecEnabled).toBe(true);
+      expect(data.nameservers).toHaveLength(2);
+    }
+  });
+
+  it('should warn about domain expiring soon', async () => {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 25); // 25 days from now
+
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [{ ldhName: 'ns1.example.com' }],
+      secureDNS: { delegationSigned: false },
+      events: [
+        { eventAction: 'expiration', eventDate: expirationDate.toISOString() }
+      ]
+    };
+
+    mockRDAPResponse(mockRDAPData);
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('expires in') && i.includes('renew soon'))).toBe(true);
+    }
+  });
+
+  it('should detect expired domain', async () => {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() - 10); // 10 days ago
+
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [{ ldhName: 'ns1.example.com' }],
+      secureDNS: { delegationSigned: false },
+      events: [
+        { eventAction: 'expiration', eventDate: expirationDate.toISOString() }
+      ]
+    };
+
+    mockRDAPResponse(mockRDAPData);
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('expired') && i.includes('days ago'))).toBe(true);
+    }
+  });
+
+  it('should warn when DNSSEC is not enabled', async () => {
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [{ ldhName: 'ns1.example.com' }, { ldhName: 'ns2.example.com' }],
+      secureDNS: { delegationSigned: false },
+      events: [
+        { eventAction: 'expiration', eventDate: '2026-08-29T14:17:30Z' }
+      ]
+    };
+
+    mockRDAPResponse(mockRDAPData);
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('DNSSEC is not enabled'))).toBe(true);
+    }
+  });
+
+  it('should detect problematic domain statuses', async () => {
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['clientHold', 'serverHold'],
+      nameservers: [{ ldhName: 'ns1.example.com' }],
+      secureDNS: { delegationSigned: false },
+      events: []
+    };
+
+    mockRDAPResponse(mockRDAPData);
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('problematic status'))).toBe(true);
+      expect(result.issues?.some((i) => i.includes('clientHold'))).toBe(true);
+    }
+  });
+
+  it('should warn when only one nameserver is configured', async () => {
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [{ ldhName: 'ns1.example.com' }],
+      secureDNS: { delegationSigned: true },
+      events: [
+        { eventAction: 'expiration', eventDate: '2026-08-29T14:17:30Z' }
+      ]
+    };
+
+    mockRDAPResponse(mockRDAPData);
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('Only one nameserver'))).toBe(true);
+      expect(result.issues?.some((i) => i.includes('add redundant nameservers'))).toBe(true);
+    }
+  });
+
+  it('should detect missing nameservers', async () => {
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [],
+      secureDNS: { delegationSigned: false },
+      events: []
+    };
+
+    mockRDAPResponse(mockRDAPData);
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.issues?.some((i) => i.includes('No nameservers found'))).toBe(true);
+    }
+  });
+
+  it('should handle domain not found', async () => {
+    const mockBootstrap = {
+      services: [
+        [['com'], ['https://rdap.verisign.com/com/v1/']]
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('data.iana.org/rdap/dns.json')) {
+        return Promise.resolve({ ok: true, json: async () => mockBootstrap });
+      }
+      // Return 404 for RDAP domain query
+      return Promise.resolve({ ok: false, status: 404, statusText: 'Not Found' });
+    });
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.summary).toBe('RDAP lookup failed');
+      expect(result.issues?.some((i) => i.includes('Could not retrieve RDAP data'))).toBe(true);
+    }
+  });
+
+  it('should handle API errors', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('data.iana.org/rdap/dns.json')) {
+        return Promise.resolve({ ok: false, status: 500, statusText: 'Internal Server Error' });
+      }
+      return Promise.resolve({ ok: false, status: 500, statusText: 'Internal Server Error' });
+    });
+
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('example.com');
+      expect(result.summary).toBe('RDAP lookup failed');
+      expect(result.issues?.some((i) => i.includes('Failed to retrieve RDAP information'))).toBe(true);
+    }
+  });
+
+  it('should handle invalid domain format', async () => {
+    const rdapScanner = SCANNERS.find((s) => s.id === 'rdap');
+    if (rdapScanner) {
+      const result = await rdapScanner.run('invalid');
+      expect(result.summary).toBe('Invalid domain');
+      expect(result.issues?.some((i) => i.includes('must have at least a name and TLD'))).toBe(true);
+    }
+  });
+});
+
+describe('RDAP Scanner Interpretations', () => {
+  // Helper for runAllScanners tests (needs all scanners mocked)
+  const mockAllScannersForRDAP = (rdapData: unknown) => {
+    const mockBootstrap = {
+      services: [
+        [['com'], ['https://rdap.verisign.com/com/v1/']]
+      ]
+    };
+
+    (global.fetch as ReturnType<typeof vi.fn>).mockImplementation((url) => {
+      const urlStr = url.toString();
+
+      // Bootstrap
+      if (urlStr.includes('data.iana.org/rdap/dns.json')) {
+        return Promise.resolve({ ok: true, json: async () => mockBootstrap });
+      }
+
+      // RDAP domain query
+      if (urlStr.includes('rdap.verisign.com')) {
+        if (typeof rdapData === 'object' && rdapData !== null && 'ok' in rdapData) {
+          return Promise.resolve(rdapData as Response);
+        }
+        return Promise.resolve({ ok: true, json: async () => rdapData });
+      }
+
+      // Certificate scanner
+      if (urlStr.includes('crt.sh')) {
+        return Promise.resolve({ ok: true, json: async () => [] });
+      }
+
+      // Default
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    });
+  };
+
+  it('returns success severity for healthy domain', async () => {
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [
+        { ldhName: 'ns1.example.com' },
+        { ldhName: 'ns2.example.com' }
+      ],
+      secureDNS: { delegationSigned: true },
+      events: [
+        { eventAction: 'expiration', eventDate: '2026-08-29T14:17:30Z' }
+      ]
+    };
+
+    mockAllScannersForRDAP(mockRDAPData);
+
+    const result = await runAllScanners('example.com');
+    const rdapResult = result.scanners.find((s) => s.id === 'rdap');
+    expect(rdapResult).toBeDefined();
+    if (rdapResult) {
+      const interpretation = interpretScannerResult(rdapResult);
+      expect(interpretation.severity).toBe('success');
+      expect(interpretation.message).toContain('Domain registration is healthy');
+      expect(interpretation.recommendation).toContain('DNSSEC configuration look good');
+    }
+  });
+
+  it('returns warning severity for domain expiring soon', async () => {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 25);
+
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [{ ldhName: 'ns1.example.com' }],
+      secureDNS: { delegationSigned: false },
+      events: [
+        { eventAction: 'expiration', eventDate: expirationDate.toISOString() }
+      ]
+    };
+
+    mockAllScannersForRDAP(mockRDAPData);
+
+    const result = await runAllScanners('example.com');
+    const rdapResult = result.scanners.find((s) => s.id === 'rdap');
+    expect(rdapResult).toBeDefined();
+    if (rdapResult) {
+      const interpretation = interpretScannerResult(rdapResult);
+      expect(interpretation.severity).toBe('warning');
+      expect(interpretation.message).toContain('Domain registration has recommendations');
+      expect(interpretation.recommendation).toContain('Review the recommendations below');
+    }
+  });
+
+  it('returns critical severity for expired domain', async () => {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() - 10);
+
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [{ ldhName: 'ns1.example.com' }],
+      secureDNS: { delegationSigned: false },
+      events: [
+        { eventAction: 'expiration', eventDate: expirationDate.toISOString() }
+      ]
+    };
+
+    mockAllScannersForRDAP(mockRDAPData);
+
+    const result = await runAllScanners('example.com');
+    const rdapResult = result.scanners.find((s) => s.id === 'rdap');
+    expect(rdapResult).toBeDefined();
+    if (rdapResult) {
+      const interpretation = interpretScannerResult(rdapResult);
+      expect(interpretation.severity).toBe('critical');
+      expect(interpretation.message).toContain('Domain registration has critical issues');
+      expect(interpretation.recommendation).toContain('immediately');
+    }
+  });
+
+  it('returns info severity for domain not found', async () => {
+    mockAllScannersForRDAP({ ok: false, status: 404, statusText: 'Not Found' });
+
+    const result = await runAllScanners('example.com');
+    const rdapResult = result.scanners.find((s) => s.id === 'rdap');
+    expect(rdapResult).toBeDefined();
+    if (rdapResult) {
+      const interpretation = interpretScannerResult(rdapResult);
+      expect(interpretation.severity).toBe('info');
+      expect(interpretation.message).toContain('RDAP lookup incomplete');
+    }
+  });
+
+  it('recommends DNSSEC when not enabled', async () => {
+    const mockRDAPData = {
+      ldhName: 'example.com',
+      status: ['active'],
+      nameservers: [
+        { ldhName: 'ns1.example.com' },
+        { ldhName: 'ns2.example.com' }
+      ],
+      secureDNS: { delegationSigned: false },
+      events: [
+        { eventAction: 'expiration', eventDate: '2026-08-29T14:17:30Z' }
+      ]
+    };
+
+    mockAllScannersForRDAP(mockRDAPData);
+
+    const result = await runAllScanners('example.com');
+    const rdapResult = result.scanners.find((s) => s.id === 'rdap');
+    expect(rdapResult).toBeDefined();
+    if (rdapResult) {
+      const interpretation = interpretScannerResult(rdapResult);
+      expect(interpretation.recommendation).toContain('Review the recommendations below');
     }
   });
 });
