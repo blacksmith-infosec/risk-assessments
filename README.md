@@ -4,7 +4,7 @@ This project provides a client-side risk assessment questionnaire and lightweigh
 / security teams to quickly baseline a prospect or environment. It is fully static (GitHub Pages friendly) and stores data
 locally (no backend persistence).
 
-You can access a hosted version at https://riskassessment.blacksmithinfosec.com. Alternatively, you can fork this repo
+You can access a hosted version at https://assess.blacksmithinfosec.com. Alternatively, you can fork this repo
 and setup your own free, personalized scanner by customizing the CSS and images. Instructions for how to set this up are
 coming soon.
 
