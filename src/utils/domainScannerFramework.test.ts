@@ -1357,13 +1357,17 @@ describe('Certificate Scanner', () => {
   });
 
   it('should detect certificates expiring within 7 days', async () => {
+    // Use fixed timestamps to avoid timezone issues
+    const fixedNow = new Date('2024-01-15T12:00:00Z');
+    vi.setSystemTime(fixedNow);
+
     const expiringCert = {
       id: 1,
       common_name: 'example.com',
       name_value: 'example.com',
       issuer_name: 'Let\'s Encrypt',
-      not_before: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-      not_after: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days
+      not_before: new Date('2023-11-15T12:00:00Z').toISOString(),
+      not_after: new Date('2024-01-20T12:00:00Z').toISOString() // Exactly 5 days from fixedNow
     };
 
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -1379,16 +1383,22 @@ describe('Certificate Scanner', () => {
       const data = result.data as { expiringIn7Days?: number };
       expect(data.expiringIn7Days).toBe(1);
     }
+
+    vi.useRealTimers();
   });
 
   it('should detect certificates expiring within 30 days', async () => {
+    // Use fixed timestamps to avoid timezone issues
+    const fixedNow = new Date('2024-01-15T12:00:00Z');
+    vi.setSystemTime(fixedNow);
+
     const expiringCert = {
       id: 1,
       common_name: 'example.com',
       name_value: 'example.com',
       issuer_name: 'Let\'s Encrypt',
-      not_before: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-      not_after: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString() // 20 days
+      not_before: new Date('2023-11-15T12:00:00Z').toISOString(),
+      not_after: new Date('2024-02-04T12:00:00Z').toISOString() // Exactly 20 days from fixedNow
     };
 
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -1399,11 +1409,13 @@ describe('Certificate Scanner', () => {
     const certScanner = SCANNERS.find((s) => s.id === 'certificates');
     if (certScanner) {
       const result = await certScanner.run('example.com');
-      expect(result.issues?.some((i) => i.includes('expires in 20 days'))).toBe(true);
-      expect(result.issues?.some((i) => i.includes('plan renewal soon'))).toBe(true);
+      expect(result.issues?.some((i: string) => i.includes('expires in 20 days'))).toBe(true);
+      expect(result.issues?.some((i: string) => i.includes('plan renewal soon'))).toBe(true);
       const data = result.data as { expiringIn30Days?: number };
       expect(data.expiringIn30Days).toBe(1);
     }
+
+    vi.useRealTimers();
   });
 
   it('should not flag certificates with plenty of time remaining', async () => {
