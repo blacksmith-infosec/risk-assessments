@@ -13,7 +13,7 @@
         {
           "option": "Draft policies exist but not formally approved",
           "risk": "Unapproved drafts are unenforceable and may conflict with legal or contractual obligations.",
-          "points": 17
+          "points": 16
         },
         {
           "option": "Approved policies exist; last review was over 24 months ago",
