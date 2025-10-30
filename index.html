@@ -6,21 +6,39 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0' />
     <title>Blacksmith InfoSec | Free Risk Assessment Tool</title>
 
-    <!-- Google Analytics -->
-    <script async src='https://www.googletagmanager.com/gtag/js?id=G-J7TCWYSKP6'></script>
+    <!-- Content Security Policy -->
+    <meta http-equiv='Content-Security-Policy' content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://dns.google https://crt.sh https://corsproxy.io https://www.google-analytics.com https://region1.analytics.google.com https://region1.google-analytics.com; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+
+    <!-- Google Analytics - Using gtag.js directly (safer than Tag Manager) -->
     <script>
+      // Define gtag function before loading the script
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-J7TCWYSKP6');
+      gtag('config', 'G-J7TCWYSKP6', {
+        'anonymize_ip': true,
+        'cookie_flags': 'SameSite=Strict;Secure'
+      });
     </script>
+    <script async src='https://www.googletagmanager.com/gtag/js?id=G-J7TCWYSKP6'></script>
 
     <script>
       (function() {
         const redirect = sessionStorage.redirect;
         delete sessionStorage.redirect;
         if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
+          // Validate redirect URL to prevent open redirect attacks
+          try {
+            const url = new URL(redirect);
+            const currentOrigin = location.origin;
+
+            // Only redirect if it's the same origin
+            if (url.origin === currentOrigin) {
+              history.replaceState(null, null, redirect);
+            }
+          } catch (e) {
+            // Invalid URL, ignore redirect
+          }
         }
       })();
     </script>

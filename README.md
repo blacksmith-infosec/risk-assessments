@@ -50,6 +50,12 @@ Client-side functions in `src/utils/domainChecks.ts` use public unauthenticated 
 - Certificates: `crt.sh` JSON output
 - Security headers: BEST-EFFORT HEAD request (often blocked by CORS); fallback to manual link
 
+**Note on CORS Proxy:** The security headers scanner uses a third-party CORS proxy (corsproxy.io) to access publicly available data from securityheaders.com. This is safe because:
+- All data being proxied is publicly accessible
+- No sensitive or private information is transmitted
+- The data is read-only security header analysis
+- If you prefer, you can self-host a CORS proxy or disable this scanner
+
 Limitations (static environment):
 - Cannot reliably read cross-origin full response headers (CORS)
 - Cannot perform breach queries against HIBP without API key + backend proxy
@@ -87,6 +93,53 @@ Rerunning scanners: For future enhancements you can expose `runScanner(domain, i
 ## Export / Import
 - JSON export includes answers + last domain scan.
 - Import expects JSON with shape: `{ "answers": {"question_id": "value"}, "domainScan": { ... } }`.
+
+## Security Considerations
+
+### Data Storage
+Assessment data is stored in browser localStorage. While this is convenient for a client-side only application, users should be aware:
+- Data persists in the browser until manually cleared
+- Browser extensions and malware with localStorage access can read the data
+- Data is specific to the browser/device (not synced across devices)
+
+For sensitive assessments, users should:
+1. Clear browser data after completing assessments
+2. Use the export feature to save data securely offline
+3. Avoid using on shared computers
+
+### Input Validation
+Domain inputs are validated using the URL constructor (`src/utils/domainValidation.ts`) to prevent:
+- Localhost and private IP scanning
+- DNS rebinding attacks
+- Invalid domain formats
+- XSS injection attempts
+
+JSON imports are thoroughly validated (`src/utils/importValidation.ts`) to prevent:
+- Deeply nested structures (DoS attacks)
+- Excessively large files
+- Invalid data structures
+- Type confusion attacks
+
+### Content Security Policy
+The application includes CSP headers to mitigate XSS attacks. The policy allows:
+- Scripts from self and Google Analytics
+- Connections to public DNS APIs (dns.google, crt.sh, corsproxy.io)
+- Inline styles for dynamic theming
+
+### Rate Limiting & Caching
+Domain scans are rate-limited (`src/utils/scannerCache.ts`) to prevent abuse:
+- Maximum 5 scans per minute
+- Results are cached for 30 minutes
+- Prevents excessive API usage
+- Improves performance for repeated scans
+
+### Security Headers
+The Vite dev server and preview mode include security headers:
+- `X-Content-Type-Options: nosniff` - Prevents MIME sniffing
+- `X-Frame-Options: DENY` - Prevents clickjacking
+- `X-XSS-Protection: 1; mode=block` - Enables XSS protection
+- `Referrer-Policy: strict-origin-when-cross-origin` - Controls referer information
+- `Permissions-Policy` - Restricts browser features
 
 ## Testing
 Unit tests (Vitest) focus on scoring logic (`src/utils/scoring.test.ts`). Run with:

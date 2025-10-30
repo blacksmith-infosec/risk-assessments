@@ -339,6 +339,15 @@ button:disabled {
   font-weight: 600;
 }
 
+.warning {
+  color: var(--yellow);
+  font-weight: 600;
+}
+.modal-content p.warning {
+  color: var(--yellow);
+  font-weight: 600;
+}
+
 .disclaimer {
   font-size: 0.8rem;
   color: var(--darkblue);
@@ -1707,4 +1716,3 @@ nav a.active {
 .footer-link {
   color: var(--blue);
 }
-

@@ -1212,7 +1212,7 @@ const sslLabsScanner: DomainScanner = {
       });
 
       // Build summary
-      const uniqueGrades = [...new Set(grades)].sort();
+      const uniqueGrades = [...new Set(grades)].sort((a, b) => a.localeCompare(b));
       const gradeText = uniqueGrades.length > 0 ? uniqueGrades.join(', ') : 'No grade';
       const allIssues = [...issues, ...warnings];
 

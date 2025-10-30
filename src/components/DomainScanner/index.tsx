@@ -3,24 +3,39 @@ import { useAppState } from '../../context/AppStateContext';
 import { SCANNERS, interpretScannerResult } from '../../utils/domainScannerFramework';
 import { TrackedButton } from '../TrackedButton';
 import { trackFormSubmit } from '../../utils/analytics';
+import { validateDomain } from '../../utils/domainValidation';
 import Footer from '../Footer';
 
 const DomainScanner = () => {
   const { runScanners, domainScanAggregate, scannerProgress } = useAppState();
-  const [input, setInput] = useState(domainScanAggregate?.domain || '');
+  const [input, setInput] = useState(domainScanAggregate?.domain ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onScan = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!input.trim()) { setError('Enter a domain'); return; }
+
+    if (!input.trim()) {
+      setError('Enter a domain');
+      return;
+    }
+
+    // Validate domain using URL constructor
+    const validation = validateDomain(input);
+    if (!validation.isValid) {
+      setError(validation.error ?? 'Invalid domain');
+      return;
+    }
+
     setLoading(true);
-    trackFormSubmit('domain_scan', { domain: input });
+    trackFormSubmit('domain_scan', { domain: validation.normalizedDomain });
     try {
-      await runScanners(input);
+      // Use normalized domain for scanning
+      await runScanners(validation.normalizedDomain!);
     } catch (err) {
-      setError('Scan failed');
+      const errorMessage = err instanceof Error ? err.message : 'Scan failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,7 +63,7 @@ const DomainScanner = () => {
         <ul className='scanner-list'>
           {SCANNERS.map((s) => {
             const prog = scannerProgress.find((p) => p.id === s.id);
-            const status = prog?.status || 'idle';
+            const status = prog?.status ?? 'idle';
             const interpretation = prog ? interpretScannerResult(prog) : null;
 
             // Status icons
@@ -99,7 +114,7 @@ const DomainScanner = () => {
                     </a>
                   </div>
                 )}
-                {prog && prog.summary && <div className='scanner-summary'>{prog.summary}</div>}
+                {prog?.summary && <div className='scanner-summary'>{prog.summary}</div>}
 
                 {interpretation && (
                   <div className={`interpretation interpretation-${interpretation.severity}`}>
@@ -140,10 +155,10 @@ const DomainScanner = () => {
                   </div>
                 )}
 
-                {prog && prog.status === 'error' && prog.error && (
+                {prog?.status === 'error' && prog.error && (
                   <div className='error-detail'>Error: {prog.error}</div>
                 )}
-                {prog && prog.issues && prog.issues.length > 0 && (
+                {prog?.issues && prog.issues.length > 0 && (
                   <details className='issues-details'>
                     <summary>{prog.issues.length} issue(s) detected</summary>
                     <ul className='issues-list'>

@@ -5,9 +5,26 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0' />
     <title>Redirecting...</title>
     <script>
-      sessionStorage.redirect = location.href;
+      // Validate redirect URL to prevent open redirect attacks
+      (function() {
+        const currentUrl = location.href;
+        const allowedOrigin = location.origin;
+
+        try {
+          const url = new URL(currentUrl);
+          // Only store redirect if it's from the same origin
+          if (url.origin === allowedOrigin) {
+            sessionStorage.redirect = currentUrl;
+          }
+        } catch (e) {
+          // Invalid URL, don't store
+        }
+
+        // Redirect to home page using JavaScript instead of meta refresh
+        // This avoids issues with browser back button and is W3C compliant
+        window.location.replace('/');
+      })();
     </script>
-    <meta http-equiv='refresh' content="0;URL='/'">
   </head>
   <body>
     <div id='root'></div>

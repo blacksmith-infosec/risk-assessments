@@ -21,12 +21,12 @@ const Import = () => {
   };
 
   const onImport = () => {
-    const ok = importJSON(raw);
+    const result = importJSON(raw);
     showToast(
-      ok ? '✓ Import successful!' : '✕ Invalid JSON format',
-      ok ? 'success' : 'error'
+      result.success ? '✓ Import successful!' : `✕ ${result.error ?? 'Invalid JSON format'}`,
+      result.success ? 'success' : 'error'
     );
-    trackImport('json', ok);
+    trackImport('json', result.success);
   };
 
   const handleFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
@@ -50,12 +50,12 @@ const Import = () => {
     reader.onload = (e) => {
       const content = e.target?.result as string;
       setRaw(content);
-      const ok = importJSON(content);
+      const result = importJSON(content);
       showToast(
-        ok ? '✓ File imported successfully!' : '✕ Invalid JSON format',
-        ok ? 'success' : 'error'
+        result.success ? '✓ File imported successfully!' : `✕ ${result.error ?? 'Invalid JSON format'}`,
+        result.success ? 'success' : 'error'
       );
-      trackImport('json', ok);
+      trackImport('json', result.success);
     };
     reader.onerror = () => {
       showToast('Error reading file', 'error');

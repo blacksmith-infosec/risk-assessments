@@ -2,6 +2,16 @@ import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import ConfirmDialog from './index';
 
+// Mock HTMLDialogElement methods for jsdom
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function(this: HTMLDialogElement) {
+    this.open = true;
+  };
+  HTMLDialogElement.prototype.close = function(this: HTMLDialogElement) {
+    this.open = false;
+  };
+});
+
 describe('ConfirmDialog', () => {
   const defaultProps = {
     isOpen: true,
@@ -75,7 +85,10 @@ describe('ConfirmDialog', () => {
 
   it('closes dialog when ESC key is pressed', () => {
     render(<ConfirmDialog {...defaultProps} />);
-    fireEvent.keyDown(document, { key: 'Escape' });
+    const dialog = screen.getByRole('dialog');
+    // Fire the cancel event on the dialog element (native behavior)
+    const cancelEvent = new Event('cancel', { bubbles: true, cancelable: true });
+    dialog.dispatchEvent(cancelEvent);
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
   });
 
@@ -85,43 +98,66 @@ describe('ConfirmDialog', () => {
     expect(defaultProps.onCancel).not.toHaveBeenCalled();
   });
 
-  it('closes when clicking overlay background', () => {
+  it('closes when clicking dialog backdrop', () => {
     render(<ConfirmDialog {...defaultProps} />);
-    const overlay = document.querySelector('.modal-overlay');
-    expect(overlay).toBeTruthy();
-    if (overlay) {
-      fireEvent.click(overlay);
-      expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
-    }
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeTruthy();
+
+    // Simulate clicking outside the dialog bounds (backdrop click)
+    const mockEvent = new MouseEvent('click', {
+      clientX: 0,
+      clientY: 0,
+      bubbles: true,
+    });
+    Object.defineProperty(dialog, 'getBoundingClientRect', {
+      value: () => ({
+        left: 100,
+        right: 400,
+        top: 100,
+        bottom: 300,
+      }),
+    });
+    dialog.dispatchEvent(mockEvent);
+    expect(defaultProps.onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('does not close when clicking modal content', () => {
+  it('does not close when clicking dialog content', () => {
     render(<ConfirmDialog {...defaultProps} />);
-    const content = document.querySelector('.modal-content');
-    expect(content).toBeTruthy();
-    if (content) {
-      fireEvent.click(content);
-      expect(defaultProps.onCancel).not.toHaveBeenCalled();
-    }
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeTruthy();
+
+    // Simulate clicking inside the dialog bounds
+    const mockEvent = new MouseEvent('click', {
+      clientX: 200,
+      clientY: 200,
+      bubbles: true,
+    });
+    Object.defineProperty(dialog, 'getBoundingClientRect', {
+      value: () => ({
+        left: 100,
+        right: 400,
+        top: 100,
+        bottom: 300,
+      }),
+    });
+    dialog.dispatchEvent(mockEvent);
+    expect(defaultProps.onCancel).not.toHaveBeenCalled();
   });
 
   it('renders dialog as portal to document.body', () => {
     render(<ConfirmDialog {...defaultProps} />);
-    const overlay = document.querySelector('.modal-overlay');
-    expect(overlay).toBeTruthy();
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeTruthy();
     // Verify it's appended to body, not in the react root
-    if (overlay) {
-      expect(overlay.parentElement).toBe(document.body);
-    }
+    expect(dialog.parentElement).toBe(document.body);
   });
 
   it('has proper ARIA attributes', () => {
     render(<ConfirmDialog {...defaultProps} />);
     // Dialog is portaled to document.body, not in the container
-    const dialog = document.querySelector('[role="dialog"]');
+    const dialog = screen.getByRole('dialog');
     expect(dialog).toBeTruthy();
-    expect(dialog?.getAttribute('aria-modal')).toBe('true');
-    expect(dialog?.getAttribute('aria-labelledby')).toBe('dialog-title');
+    expect(dialog.getAttribute('aria-labelledby')).toBe('dialog-title');
     const title = document.getElementById('dialog-title');
     expect(title).toBeTruthy();
     expect(title?.textContent).toBe('Confirm Action');

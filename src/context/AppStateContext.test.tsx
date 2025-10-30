@@ -211,85 +211,93 @@ describe('AppStateContext', () => {
     it('should import valid data and update state', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
       const importData = JSON.stringify({ answers: { q1: 'High', q2: 'Low' } });
-      let success = false;
+      let importResult: { success: boolean; error?: string } = { success: false };
       act(() => {
-        success = result.current.importJSON(importData);
+        importResult = result.current.importJSON(importData);
       });
-      expect(success).toBe(true);
+      expect(importResult.success).toBe(true);
       expect(result.current.answers).toEqual({ q1: 'High', q2: 'Low' });
       expect(localStorage.setItem).toHaveBeenCalledWith('risk_answers_v1', JSON.stringify({ q1: 'High', q2: 'Low' }));
     });
 
     it('should handle invalid JSON', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON('invalid json{');
+        importResult = result.current.importJSON('invalid json{');
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toBeDefined();
     });
 
     it('should reject non-object JSON (array)', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON('[]');
+        importResult = result.current.importJSON('[]');
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('must be an object');
     });
 
     it('should reject non-object JSON (null)', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON('null');
+        importResult = result.current.importJSON('null');
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('must be an object');
     });
 
     it('should reject non-object JSON (string)', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON('"just a string"');
+        importResult = result.current.importJSON('"just a string"');
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('must be an object');
     });
 
     it('should reject empty object with no valid data', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON('{}');
+        importResult = result.current.importJSON('{}');
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('must contain either answers or domainScanAggregate');
     });
 
     it('should reject answers that are not objects', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON(JSON.stringify({ answers: 'not an object' }));
+        importResult = result.current.importJSON(JSON.stringify({ answers: 'not an object' }));
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('Invalid answers format');
     });
 
     it('should reject answers that are arrays', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON(JSON.stringify({ answers: ['q1', 'q2'] }));
+        importResult = result.current.importJSON(JSON.stringify({ answers: ['q1', 'q2'] }));
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('Invalid answers format');
     });
 
     it('should reject answers with non-string values', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON(JSON.stringify({ answers: { q1: 123 } }));
+        importResult = result.current.importJSON(JSON.stringify({ answers: { q1: 123 } }));
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('string key-value pairs');
     });
 
     it('should import valid domain scan aggregate', () => {
@@ -301,33 +309,35 @@ describe('AppStateContext', () => {
         issues: []
       };
       const importData = JSON.stringify({ domainScanAggregate: mockAggregate });
-      let success = false;
+      let importResult: { success: boolean; error?: string } = { success: false };
       act(() => {
-        success = result.current.importJSON(importData);
+        importResult = result.current.importJSON(importData);
       });
-      expect(success).toBe(true);
+      expect(importResult.success).toBe(true);
       expect(result.current.domainScanAggregate).toEqual(mockAggregate);
       expect(localStorage.setItem).toHaveBeenCalledWith('risk_domain_scan_agg_v1', JSON.stringify(mockAggregate));
     });
 
     it('should reject domain scan aggregate with missing required fields', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON(JSON.stringify({
+        importResult = result.current.importJSON(JSON.stringify({
           domainScanAggregate: { domain: 'example.com' } // missing timestamp, scanners, issues
         }));
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toBeDefined();
     });
 
     it('should reject domain scan aggregate that is an array', () => {
       const { result } = renderHook(() => useAppState(), { wrapper });
-      let success = true;
+      let importResult: { success: boolean; error?: string } = { success: true };
       act(() => {
-        success = result.current.importJSON(JSON.stringify({ domainScanAggregate: [] }));
+        importResult = result.current.importJSON(JSON.stringify({ domainScanAggregate: [] }));
       });
-      expect(success).toBe(false);
+      expect(importResult.success).toBe(false);
+      expect(importResult.error).toContain('Invalid domainScanAggregate format');
     });
 
     it('should import both answers and domain scan aggregate', () => {
@@ -342,11 +352,11 @@ describe('AppStateContext', () => {
         answers: { q1: 'High' },
         domainScanAggregate: mockAggregate
       });
-      let success = false;
+      let importResult: { success: boolean; error?: string } = { success: false };
       act(() => {
-        success = result.current.importJSON(importData);
+        importResult = result.current.importJSON(importData);
       });
-      expect(success).toBe(true);
+      expect(importResult.success).toBe(true);
       expect(result.current.answers).toEqual({ q1: 'High' });
       expect(result.current.domainScanAggregate).toEqual(mockAggregate);
     });
@@ -368,7 +378,12 @@ describe('AppStateContext', () => {
       act(() => {
         result.current.importJSON('invalid');
       });
-      expect(amplitude.logEvent).toHaveBeenCalledWith('import', {
+      expect(amplitude.logEvent).toHaveBeenCalled();
+      const lastCall = (amplitude.logEvent as ReturnType<typeof vi.fn>).mock.calls[
+        (amplitude.logEvent as ReturnType<typeof vi.fn>).mock.calls.length - 1
+      ];
+      expect(lastCall[0]).toBe('import');
+      expect(lastCall[1]).toMatchObject({
         import_type: 'json',
         success: false
       });
@@ -379,7 +394,12 @@ describe('AppStateContext', () => {
       act(() => {
         result.current.importJSON('{}');
       });
-      expect(amplitude.logEvent).toHaveBeenCalledWith('import', {
+      expect(amplitude.logEvent).toHaveBeenCalled();
+      const lastCall = (amplitude.logEvent as ReturnType<typeof vi.fn>).mock.calls[
+        (amplitude.logEvent as ReturnType<typeof vi.fn>).mock.calls.length - 1
+      ];
+      expect(lastCall[0]).toBe('import');
+      expect(lastCall[1]).toMatchObject({
         import_type: 'json',
         success: false
       });

@@ -10,6 +10,8 @@ import { ExecutedScannerResult } from '../types/domainScan';
 import { APP_CONFIG } from '../config/appConfig';
 import * as amplitude from '@amplitude/analytics-browser';
 import { trackEvent, trackImport } from '../utils/analytics';
+import { scannerCache } from '../utils/scannerCache';
+import { validateImportJSON } from '../utils/importValidation';
 
 interface AppStateContextValue {
   questions: Question[];
@@ -26,7 +28,7 @@ interface AppStateContextValue {
   scannerProgress: ExecutedScannerResult[];
   runScanners: (domain: string) => Promise<void>;
   exportJSON: () => string;
-  importJSON: (json: string) => boolean;
+  importJSON: (json: string) => { success: boolean; error?: string };
 }
 
 export type { AppStateContextValue };
@@ -121,41 +123,52 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { risks, bestPractices }: RiskMappingResult = useMemo(() => mapRisks(answers, questions), [answers, questions]);
 
   const runScanners = async (domain: string) => {
+    // Check cache first
+    const cached = scannerCache.get<DomainScanAggregate>(domain);
+    if (cached) {
+      setDomainScanAggregate(cached);
+      setScannerProgress(cached.scanners);
+      trackEvent('domain_scanned_cached', { domain: cached.domain });
+      return;
+    }
+
+    // Check rate limit
+    const rateCheck = scannerCache.checkRateLimit();
+    if (!rateCheck.allowed) {
+      throw new Error(`Rate limit exceeded. Please wait ${rateCheck.retryAfter} seconds before scanning again.`);
+    }
+
     setScannerProgress([]);
     const agg = await runAllScanners(domain, (partial) => {
       setScannerProgress(partial);
     });
+
     setDomainScanAggregate(agg);
     persist(DOMAIN_AGG_KEY, agg);
+
+    // Cache the result
+    scannerCache.set(domain, agg);
+
     trackEvent('domain_scanned_modular', { domain: agg.domain, issues_count: agg.issues.length });
   };
 
   const exportJSON = () => JSON.stringify({ answers, risks, bestPractices, domainScanAggregate }, null, 2);
 
-  const importJSON = (json: string): boolean => {
+  const importJSON = (json: string): { success: boolean; error?: string } => {
+    // Validate JSON structure and complexity first
+    const validation = validateImportJSON(json);
+    if (!validation.isValid) {
+      trackImport('json', false, { error: validation.error });
+      return { success: false, error: validation.error };
+    }
+
     try {
       const obj = JSON.parse(json);
 
-      // Validate that obj is an object and not null or array
-      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
-        trackImport('json', false);
-        return false;
-      }
-
-      let hasValidData = false;
-
       // Validate and import answers
       if (obj.answers && typeof obj.answers === 'object' && !Array.isArray(obj.answers)) {
-        // Validate that all keys are strings and values are strings
-        const isValidAnswers = Object.entries(obj.answers).every(
-          ([key, value]) => typeof key === 'string' && typeof value === 'string'
-        );
-
-        if (isValidAnswers) {
-          setAnswers(obj.answers);
-          persist(ANSWERS_KEY, obj.answers);
-          hasValidData = true;
-        }
+        setAnswers(obj.answers);
+        persist(ANSWERS_KEY, obj.answers);
       }
 
       // Validate and import domain scan aggregate
@@ -164,31 +177,16 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         typeof obj.domainScanAggregate === 'object' &&
         !Array.isArray(obj.domainScanAggregate)
       ) {
-        // Validate required fields
-        const scan = obj.domainScanAggregate;
-        if (
-          typeof scan.domain === 'string' &&
-          typeof scan.timestamp === 'string' &&
-          Array.isArray(scan.scanners) &&
-          Array.isArray(scan.issues)
-        ) {
-          setDomainScanAggregate(obj.domainScanAggregate);
-          persist(DOMAIN_AGG_KEY, obj.domainScanAggregate);
-          hasValidData = true;
-        }
+        setDomainScanAggregate(obj.domainScanAggregate);
+        persist(DOMAIN_AGG_KEY, obj.domainScanAggregate);
       }
 
-      // Only track as successful if we actually imported some valid data
-      if (hasValidData) {
-        trackImport('json', true);
-        return true;
-      } else {
-        trackImport('json', false);
-        return false;
-      }
-    } catch {
-      trackImport('json', false);
-      return false;
+      trackImport('json', true);
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to parse JSON';
+      trackImport('json', false, { error: errorMessage });
+      return { success: false, error: errorMessage };
     }
   };
 

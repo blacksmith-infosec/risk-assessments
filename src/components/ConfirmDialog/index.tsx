@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { TrackedButton } from '../TrackedButton';
 
@@ -23,60 +23,82 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onCancel,
   variant = 'primary',
 }) => {
-  // Handle ESC key to close dialog
-  useEffect(() => {
-    if (!isOpen) return;
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+  // Open/close the dialog using the native dialog API
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (isOpen) {
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [isOpen]);
+
+  // Handle ESC key and backdrop click (both handled natively by <dialog>)
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleCancel = (e: Event) => {
+      e.preventDefault(); // Prevent default close behavior
+      onCancel();
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      // Close when clicking the backdrop
+      const rect = dialog.getBoundingClientRect();
+      if (
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom
+      ) {
         onCancel();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onCancel]);
+    dialog.addEventListener('cancel', handleCancel);
+    dialog.addEventListener('click', handleClick);
 
-  if (!isOpen) return null;
+    return () => {
+      dialog.removeEventListener('cancel', handleCancel);
+      dialog.removeEventListener('click', handleClick);
+    };
+  }, [onCancel]);
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Only close if clicking the overlay itself, not the modal content
-    if (e.target === e.currentTarget) {
-      onCancel();
-    }
-  };
-
-  const dialog = (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-    <div className='modal-overlay' onClick={handleOverlayClick}>
-      <div className='modal-content' role='dialog' aria-labelledby='dialog-title' aria-modal='true'>
-        <h3 id='dialog-title'>{title}</h3>
-        <p>{message}</p>
-        <div className='modal-actions'>
-          <TrackedButton
-            className='btn-secondary'
-            trackingName='dialog_cancel'
-            trackingProperties={{ dialog: title }}
-            onClick={onCancel}
-            type='button'
-          >
-            {cancelLabel}
-          </TrackedButton>
-          <TrackedButton
-            className={variant === 'danger' ? 'btn-danger' : 'btn-primary'}
-            trackingName='dialog_confirm'
-            trackingProperties={{ dialog: title, variant }}
-            onClick={onConfirm}
-            type='button'
-          >
-            {confirmLabel}
-          </TrackedButton>
-        </div>
+  const dialogContent = (
+    <dialog ref={dialogRef} className='modal-content' aria-labelledby='dialog-title'>
+      <h3 id='dialog-title'>{title}</h3>
+      <p>{message}</p>
+      <div className='modal-actions'>
+        <TrackedButton
+          className='btn-secondary'
+          trackingName='dialog_cancel'
+          trackingProperties={{ dialog: title }}
+          onClick={onCancel}
+          type='button'
+        >
+          {cancelLabel}
+        </TrackedButton>
+        <TrackedButton
+          className={variant === 'danger' ? 'btn-danger' : 'btn-primary'}
+          trackingName='dialog_confirm'
+          trackingProperties={{ dialog: title, variant }}
+          onClick={onConfirm}
+          type='button'
+        >
+          {confirmLabel}
+        </TrackedButton>
       </div>
-    </div>
+    </dialog>
   );
 
-  return createPortal(dialog, document.body);
+  return createPortal(dialogContent, document.body);
 };
 
 export default ConfirmDialog;

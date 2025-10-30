@@ -1,6 +1,16 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import ResetDialog from './index';
 
+// Mock HTMLDialogElement methods for jsdom
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function(this: HTMLDialogElement) {
+    this.open = true;
+  };
+  HTMLDialogElement.prototype.close = function(this: HTMLDialogElement) {
+    this.open = false;
+  };
+});
+
 afterEach(() => {
   cleanup();
 });
@@ -15,8 +25,8 @@ describe('ResetDialog', () => {
   });
 
   describe('Visibility', () => {
-    it('renders nothing when isOpen is false', () => {
-      const { container } = render(
+    it('renders dialog closed when isOpen is false', () => {
+      render(
         <ResetDialog
           isOpen={false}
           onCancel={mockOnCancel}
@@ -26,10 +36,11 @@ describe('ResetDialog', () => {
         />
       );
 
-      expect(container.firstChild).toBeNull();
+      const dialog = screen.getByRole('dialog', { hidden: true }) as HTMLDialogElement;
+      expect(dialog.open).toBe(false);
     });
 
-    it('renders dialog when isOpen is true', () => {
+    it('renders dialog open when isOpen is true', () => {
       render(
         <ResetDialog
           isOpen={true}
@@ -40,6 +51,8 @@ describe('ResetDialog', () => {
         />
       );
 
+      const dialog = screen.getByRole('dialog') as HTMLDialogElement;
+      expect(dialog.open).toBe(true);
       expect(screen.getByText('Reset All Data?')).toBeDefined();
     });
   });

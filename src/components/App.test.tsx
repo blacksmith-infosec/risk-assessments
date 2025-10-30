@@ -1,7 +1,17 @@
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
 import App from './App';
 import * as AppStateContext from '../context/AppStateContext';
 import type { AppStateContextValue } from '../context/AppStateContext';
+
+// Mock HTMLDialogElement methods for jsdom
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function(this: HTMLDialogElement) {
+    this.open = true;
+  };
+  HTMLDialogElement.prototype.close = function(this: HTMLDialogElement) {
+    this.open = false;
+  };
+});
 
 // Mock URL methods for export functionality
 global.URL.createObjectURL = vi.fn(() => 'mock-url');
@@ -110,16 +120,21 @@ describe('App - Reset Functionality', () => {
       expect(screen.getByText('Reset All Data?')).toBeDefined();
     });
 
-    it('closes dialog when Cancel clicked', () => {
+    it('closes dialog when Cancel clicked', async () => {
       render(<App />);
 
       const resetBtn = screen.getByText(/🔄 Reset/);
       fireEvent.click(resetBtn);
 
+      const dialog = screen.getByRole('dialog') as HTMLDialogElement;
+      expect(dialog.open).toBe(true);
+
       const cancelBtn = screen.getByText('Cancel');
       fireEvent.click(cancelBtn);
 
-      expect(screen.queryByText('Reset All Data?')).toBeNull();
+      await waitFor(() => {
+        expect(dialog.open).toBe(false);
+      });
     });
 
     it('calls resetAll when Reset All Data clicked', () => {

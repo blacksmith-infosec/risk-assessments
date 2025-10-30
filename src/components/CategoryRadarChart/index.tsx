@@ -27,7 +27,7 @@ interface TooltipProps {
 
 // Exported for testability: custom tooltip component
 export const CustomTooltip: React.FC<TooltipProps> = ({ active, payload }) => {
-  if (active && payload && payload.length) {
+  if (active && payload?.length) {
     return (
       <div className='radar-tooltip'>
         <p className='radar-tooltip-title'>
