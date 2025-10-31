@@ -307,7 +307,7 @@ describe('TrackedLink', () => {
     it('tracks GitHub issue link', () => {
       render(
         <TrackedLink
-          href="https://github.com/blacksmithinfosec/risk-assessments/issues"
+          href="https://github.com/blacksmith-infosec/risk-assessments/issues"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -319,7 +319,7 @@ describe('TrackedLink', () => {
       clickLink(link);
 
       expect(analytics.trackExternalLink).toHaveBeenCalledWith(
-        'https://github.com/blacksmithinfosec/risk-assessments/issues',
+        'https://github.com/blacksmith-infosec/risk-assessments/issues',
         'GitHub'
       );
     });

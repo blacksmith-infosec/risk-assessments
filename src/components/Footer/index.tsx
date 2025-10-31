@@ -17,7 +17,7 @@ const Footer: React.FC = () => (
         . This tool is free to use and{' '}
         <TrackedLink
           className='footer-link'
-          href='https://github.com/blacksmithinfosec/risk-assessments'
+          href='https://github.com/blacksmith-infosec/risk-assessments'
           target='_blank'
           rel='noopener noreferrer'
         >
@@ -26,7 +26,7 @@ const Footer: React.FC = () => (
         . Have a suggestion or found a bug?{' '}
         <TrackedLink
           className='footer-link'
-          href='https://github.com/blacksmithinfosec/risk-assessments/issues'
+          href='https://github.com/blacksmith-infosec/risk-assessments/issues'
           target='_blank'
           rel='noopener noreferrer'
         >
