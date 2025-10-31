@@ -297,7 +297,7 @@
           "option": "No centrally managed anti-malware/EDR",
           "risk": "Without centrally managed endpoint protection, malware and ransomware can spread rapidly and evade detection across the environment.",
           "points": 0
-        }
+        },
         {
           "option": "Legacy AV on some endpoints",
           "risk": "Legacy antivirus misses modern techniques, allowing dwell time and data exfiltration.",
@@ -312,7 +312,7 @@
           "option": "EDR on all endpoints including servers with MDR/SOC monitoring",
           "risk": "Comprehensive EDR with MDR/SOC cuts detection time, though tuning and coverage must be maintained.",
           "points": 100
-        },
+        }
         
       ]
     },
