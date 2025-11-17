@@ -1,0 +1,17 @@
+services:
+  risk-assessment:
+    container_name: risk-assessment
+    restart: always
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "3000:443"
+    volumes:
+      - ./caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,40 @@
+# global options
+{
+	admin off
+	persist_config off
+	log {
+		format json
+	}
+}
+
+# site block
+localhost {
+	log {
+		format json
+	}
+	respond /health 200
+	# Security headers
+	header {
+		# Prevent some browsers from MIME-sniffing a response away from the declared Content-Type
+		X-Content-Type-Options "nosniff"
+		# Remove Server header
+		-Server
+	}
+	# serve from the 'dist' folder (Vite builds into the 'dist' folder)
+	root * /usr/share/caddy
+	# Handle static files
+	file_server {
+		hide .git
+		hide .env*
+	}
+	# Compression with more formats
+	encode {
+		gzip
+		zstd
+	}
+	tls internal {
+		on_demand
+	}
+	# Try files with HTML extension and handle SPA routing
+	try_files {path} {path}.html {path}/index.html /index.html
+}
