@@ -9,6 +9,9 @@ import {
   ScannerInterpretation,
 } from '../../types/domainScan';
 
+// Import new scanner types
+import { ScannerResult } from './types';
+
 // Import individual scanners
 import { dnsScanner, interpretDnsResult } from './dnsScanner';
 import { emailAuthScanner, interpretEmailAuthResult } from './emailAuthScanner';
@@ -16,6 +19,12 @@ import { certificateScanner, interpretCertificateResult } from './certificateSca
 import { rdapScanner, interpretRdapResult } from './rdapScanner';
 import { sslLabsScanner, interpretSslLabsResult } from './sslLabsScanner';
 import { securityHeadersScanner, interpretSecurityHeadersResult } from './securityHeadersScanner';
+
+// Import new Blacksmith scanners
+import { runPortScanner } from './portScanner';
+import { runSslChainScanner } from './sslChainScanner';
+import { runReputationScanner } from './reputationScanner';
+import { runUrlAnalysisScanner } from './urlAnalysisScanner';
 
 
 // Default timeout for each scanner (30 seconds). Made mutable for testing.
@@ -56,7 +65,133 @@ export const SCANNERS: DomainScanner[] = [
   rdapScanner,
   sslLabsScanner,
   securityHeadersScanner,
+  // New Blacksmith scanners
+  {
+    id: 'portScanner',
+    label: 'Port Scanner',
+    run: runPortScanner,
+    timeout: 10000,
+    dataSource: {
+      name: 'Shodan InternetDB',
+      url: 'https://internetdb.shodan.io',
+    },
+  },
+  {
+    id: 'sslChainScanner',
+    label: 'SSL Chain Scanner',
+    run: runSslChainScanner,
+    timeout: 30000,
+    dataSource: {
+      name: 'SSL Labs API',
+      url: 'https://api.ssllabs.com',
+    },
+  },
+  {
+    id: 'reputationScanner',
+    label: 'Reputation Scanner',
+    run: runReputationScanner,
+    timeout: 15000,
+    dataSource: {
+      name: 'VirusTotal API',
+      url: 'https://www.virustotal.com',
+    },
+  },
+  {
+    id: 'urlAnalysisScanner',
+    label: 'URL Analysis Scanner',
+    run: runUrlAnalysisScanner,
+    timeout: 30000,
+    dataSource: {
+      name: 'URLScan.io API',
+      url: 'https://urlscan.io',
+    },
+  },
 ];
+
+// Interpretation functions for new Blacksmith scanners
+function interpretPortScannerResult(scanner: ExecutedScannerResult): ScannerInterpretation {
+  const result = scanner.data as any;
+  const hasHighRisk = result.highRiskPorts?.length > 0;
+  const hasCves = result.cves?.length > 0;
+
+  if (hasHighRisk || hasCves) {
+    return {
+      severity: 'critical',
+      message: 'High-risk ports or vulnerabilities detected',
+      recommendation: 'Investigate and remediate open ports and CVEs immediately'
+    };
+  }
+
+  return {
+    severity: 'success',
+    message: 'No high-risk ports detected',
+    recommendation: 'Port configuration appears secure'
+  };
+}
+
+function interpretSslChainScannerResult(scanner: ExecutedScannerResult): ScannerInterpretation {
+  const result = scanner.data as any;
+  const grade = result.grade || 'F';
+  const hasTrustIssues = result.trustIssues?.length > 0;
+
+  if (grade === 'F' || grade === 'T' || grade === 'M' || hasTrustIssues) {
+    return {
+      severity: 'critical',
+      message: `Poor SSL configuration (Grade: ${grade})`,
+      recommendation: 'Immediate SSL certificate remediation required'
+    };
+  } else if (grade === 'A+' || grade === 'A') {
+    return {
+      severity: 'success',
+      message: `Excellent SSL configuration (Grade: ${grade})`,
+      recommendation: 'SSL configuration meets best practices'
+    };
+  }
+
+  return {
+    severity: 'warning',
+    message: `SSL configuration needs improvement (Grade: ${grade})`,
+    recommendation: 'Review SSL certificate chain and trust settings'
+  };
+}
+
+function interpretReputationScannerResult(scanner: ExecutedScannerResult): ScannerInterpretation {
+  const result = scanner.data as any;
+  const malicious = result.malicious || false;
+
+  if (malicious) {
+    return {
+      severity: 'critical',
+      message: 'Domain flagged as malicious by security engines',
+      recommendation: 'Block this domain immediately and investigate'
+    };
+  }
+
+  return {
+    severity: 'success',
+    message: 'No malicious activity detected',
+    recommendation: 'Domain reputation appears clean'
+  };
+}
+
+function interpretUrlAnalysisScannerResult(scanner: ExecutedScannerResult): ScannerInterpretation {
+  const result = scanner.data as any;
+  const malicious = result.malicious || false;
+
+  if (malicious) {
+    return {
+      severity: 'critical',
+      message: 'URL contains malicious content',
+      recommendation: 'Block this URL and investigate the source'
+    };
+  }
+
+  return {
+    severity: 'success',
+    message: 'URL appears safe',
+    recommendation: 'No security issues detected in URL analysis'
+  };
+}
 
 // Interpret scanner results to provide user-friendly status and recommendations
 export const interpretScannerResult = (scanner: ExecutedScannerResult): ScannerInterpretation => {
@@ -84,6 +219,14 @@ export const interpretScannerResult = (scanner: ExecutedScannerResult): ScannerI
       return interpretSslLabsResult(scanner);
     case 'securityHeaders':
       return interpretSecurityHeadersResult(scanner);
+    case 'portScanner':
+      return interpretPortScannerResult(scanner);
+    case 'sslChainScanner':
+      return interpretSslChainScannerResult(scanner);
+    case 'reputationScanner':
+      return interpretReputationScannerResult(scanner);
+    case 'urlAnalysisScanner':
+      return interpretUrlAnalysisScannerResult(scanner);
     default:
       return {
         severity: issueCount === 0 ? 'success' : 'warning',
@@ -131,23 +274,16 @@ export const runAllScanners = async (
       .then((r) => {
         const issues = r.issues || scanner.deriveIssues?.(r, trimmed) || [];
         Object.assign(base, r, { status: 'complete', issues, finishedAt: new Date().toISOString() });
-        onProgress?.([...results]); // Notify on completion
         return base;
       })
       .catch((err: unknown) => {
         base.status = 'error';
         base.error = err instanceof Error ? err.message : 'Unknown error';
         base.finishedAt = new Date().toISOString();
-        onProgress?.([...results]); // Notify on error
         return base;
       });
   });
 
-  // Initial progress callback with all scanners in "running" state
-  onProgress?.([...results]);
-
-  // Wait for all scanners to complete (or fail)
-  await Promise.allSettled(scannerPromises);
 
   const allIssues = results.flatMap((r) => r.issues || []);
   return {
@@ -191,4 +327,13 @@ export const runScanner = async (domain: string, scannerId: string): Promise<Exe
       dataSource: scanner.dataSource,
     };
   }
+};
+
+
+// Export individual scanner functions for direct use
+export {
+  runPortScanner,
+  runSslChainScanner,
+  runReputationScanner,
+  runUrlAnalysisScanner,
 };

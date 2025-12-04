@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppState } from '../../context/AppStateContext';
 import { SCANNERS, interpretScannerResult } from '../../utils/scanners';
@@ -15,6 +15,14 @@ const DomainScanner = () => {
   const [input, setInput] = useState(domainScanAggregate?.domain ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('DEBUG: DomainScanner component mounted/updated');
+    console.log('DEBUG: domainScanAggregate:', domainScanAggregate);
+    console.log('DEBUG: scannerProgress:', scannerProgress);
+    console.log('DEBUG: scannerProgress length:', scannerProgress?.length);
+  }, [domainScanAggregate, scannerProgress]);
 
   const onScan = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +43,17 @@ const DomainScanner = () => {
     setLoading(true);
     trackFormSubmit('domain_scan', { domain: validation.normalizedDomain });
     try {
+      console.log('DEBUG: Starting scan for domain:', validation.normalizedDomain);
       // Use normalized domain for scanning
       await runScanners(validation.normalizedDomain!);
+      console.log('DEBUG: Scan completed successfully');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('domainScanner.errors.scanFailed');
+      console.error('DEBUG: Scan failed with error:', err);
       setError(errorMessage);
     } finally {
       setLoading(false);
+      console.log('DEBUG: Loading state set to false');
     }
   };
 
@@ -72,6 +84,7 @@ const DomainScanner = () => {
         <ul className='scanner-list'>
           {SCANNERS.map((s) => {
             const prog = scannerProgress.find((p) => p.id === s.id);
+            console.log(`DEBUG: Scanner ${s.id} - prog found:`, !!prog, 'status:', prog?.status);
             const status = prog?.status ?? 'idle';
             const interpretation = prog ? interpretScannerResult(prog) : null;
 
@@ -200,6 +213,16 @@ const DomainScanner = () => {
             )}
           </div>
         )}
+        {!domainScanAggregate && scannerProgress.length === 0 && !loading && (
+          <div className='no-results'>
+            <p>{t('domainScanner.noScanResults')}</p>
+          </div>
+        )}
+        {loading && scannerProgress.length === 0 && (
+          <div className='loading-state'>
+            <p>{t('domainScanner.loadingScanners')}</p>
+          </div>
+        )}
       </div>
       <p className='disclaimer'>
         {t('domainScanner.disclaimer')}
@@ -209,4 +232,10 @@ const DomainScanner = () => {
   );
 };
 
-export default DomainScanner;
+export default function WrappedDomainScanner() {
+  return (
+    <ScannerErrorBoundary>
+      <DomainScanner />
+    </ScannerErrorBoundary>
+  );
+}

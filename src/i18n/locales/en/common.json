@@ -172,7 +172,9 @@
     "allIssues": "All Issues",
     "noIssuesDetected": "✓ No issues detected - Your domain configuration looks good!",
     "disclaimer": "Disclaimer: Some checks (full SSL chain, exhaustive headers, breach data) require backend or API keys not included in this free static tool.",
-    "errorPrefix": "Error:"
+    "errorPrefix": "Error:",
+    "noScanResults": "No scan results available. Please run a domain scan.",
+    "loadingScanners": "Loading scanners..."
   },
   "import": {
     "title": "Data Import / Export",
