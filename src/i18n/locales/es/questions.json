@@ -400,30 +400,30 @@
       }
     },
     "vendor_third_party_management_q45": {
-      "text": "¿Evalúa los controles de seguridad de los proveedores antes de incorporarlos?",
-      "options": {
-        "opt0": {
-          "label": "No hay informes regulares al liderazgo ejecutivo o junta directiva",
-          "risk": "La falta de informes limita la supervisión y desprioriza la inversión en seguridad."
-        },
-        "opt1": {
-          "label": "Actualizaciones informales o informes solo posteriores a incidentes",
-          "risk": "Las actualizaciones informales o posteriores a incidentes obstaculizan la responsabilidad y las decisiones oportunas."
-        },
-        "opt2": {
-          "label": "Informes periódicos enfocados en actividades (no en riesgos/resultados)",
-          "risk": "Los informes centrados en actividades oscurecen el riesgo verdadero y los resultados comerciales."
-        },
-        "opt3": {
-          "label": "Informes regulares de riesgos clave, métricas y estado de remediación",
-          "risk": "Los informes regulares centrados en riesgos con métricas y estado de remediación permiten la toma de decisiones informadas y priorización."
-        },
-        "opt4": {
-          "label": "Informes alineados con el apetito de riesgo con solicitudes de decisión explícitas",
-          "risk": "Los informes alineados con el apetito de riesgo con solicitudes de decisión explícitas respaldan la asignación de recursos oportuna y las mejores prácticas de gobernanza."
-        }
-      }
+  "text": "¿Evalúa los controles de seguridad de los proveedores antes de incorporarlos?",
+  "options": {
+    "opt0": {
+      "label": "No se realiza ninguna evaluación previa de la seguridad o protección de datos del proveedor",
+      "risk": "Los proveedores pueden ser contratados sin comprender su postura de seguridad, sus prácticas de manejo de datos o sus riesgos de cumplimiento."
     },
+    "opt1": {
+      "label": "Solo se realizan revisiones informales u ocasionales",
+      "risk": "Las prácticas de revisión inconsistentes aumentan la probabilidad de que riesgos importantes del proveedor no sean identificados antes de la incorporación."
+    },
+    "opt2": {
+      "label": "Se realizan verificaciones básicas para algunos proveedores clave, pero no de forma consistente",
+      "risk": "La debida diligencia parcial o inconsistente genera brechas de supervisión y puede dejar a proveedores de mayor riesgo con una revisión insuficiente."
+    },
+    "opt3": {
+      "label": "Existe una evaluación previa definida para proveedores clave",
+      "risk": "Evaluar solo a ciertos proveedores puede dejar a proveedores menos visibles o mal clasificados sin una revisión suficiente antes de su incorporación."
+    },
+    "opt4": {
+      "label": "Se realiza una evaluación consistente basada en riesgos, alineada con la criticidad del proveedor y su acceso a los datos",
+      "risk": "Un proceso de evaluación basado en riesgos ayuda a garantizar que las revisiones de proveedores sean proporcionales, consistentes y enfocadas en los proveedores que representan el mayor riesgo."
+    }
+  }
+},
     "vendor_third_party_management_q47": {
       "text": "¿Los contratos incluyen obligaciones de protección de datos y confidencialidad?",
       "options": {
