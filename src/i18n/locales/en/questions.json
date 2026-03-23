@@ -403,24 +403,24 @@
       "text": "Do you assess vendor security controls before onboarding?",
       "options": {
         "opt0": {
-          "label": "No regular reporting to executive leadership or board",
-          "risk": "Lack of reporting limits oversight and deprioritizes security investment."
+          "label": "No pre-onboarding assessment of vendor security or data protection",
+          "risk": "Vendors may be engaged without understanding their security posture, data handling practices, or compliance risks."
         },
         "opt1": {
-          "label": "Informal updates or post-incident reporting only",
-          "risk": "Informal or post-incident updates hinder accountability and timely decisions."
+          "label": "Informal or occasional checks only",
+          "risk": "Inconsistent review practices increase the likelihood that significant vendor risks will go unidentified before onboarding."
         },
         "opt2": {
-          "label": "Periodic activity-focused reports (not risk/outcomes)",
-          "risk": "Activity-heavy reports obscure true risk and business outcomes."
+          "label": "Basic checks for some key vendors, but not consistently",
+          "risk": "Partial or inconsistent due diligence creates gaps in oversight and may leave higher-risk vendors insufficiently reviewed."
         },
         "opt3": {
-          "label": "Regular reporting of key risks, metrics, and remediation status",
-          "risk": "Regular, risk-centric reporting with metrics and remediation status enables informed decision-making and prioritization."
+          "label": "Defined pre-onboarding assessment for key vendors",
+          "risk": "Assessing only selected vendors may leave lower-visibility or misclassified vendors onboarded without sufficient review."
         },
         "opt4": {
-          "label": "Reporting aligned to risk appetite with explicit decision requests",
-          "risk": "Reporting aligned to risk appetite with explicit decision requests supports timely resourcing and governance best practices."
+          "label": "Consistent risk-based assessment aligned to vendor criticality and data access",
+          "risk": "A risk-based assessment process helps ensure vendor reviews are proportionate, consistent, and focused on the vendors that present the greatest risk."
         }
       }
     },
