@@ -21,7 +21,7 @@
     "react-dom": "19.2.4",
     "react-i18next": "^17.0.1",
     "react-router-dom": "7.13.2",
-    "recharts": "^3.8.0"
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.28.6",
