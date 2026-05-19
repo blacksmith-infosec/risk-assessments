@@ -19,8 +19,8 @@
     "prop-types": "15.8.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "react-i18next": "^17.0.7",
-    "react-router-dom": "7.15.0",
+    "react-i18next": "^17.0.8",
+    "react-router-dom": "7.15.1",
     "recharts": "^3.8.1"
   },
   "devDependencies": {
@@ -34,7 +34,7 @@
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.59.3",
     "@typescript-eslint/parser": "^8.59.2",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.6",
     "eslint": "^10.0.3",
     "eslint-plugin-jsx-a11y": "^6.10.2",
