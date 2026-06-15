@@ -14,7 +14,7 @@ interface ValidationResult {
 export const validateJSONComplexity = (
   obj: unknown,
   maxDepth: number = 10,
-  maxKeys: number = 1000,
+  maxKeys: number = 10000,
   currentDepth: number = 0,
   keyCount: { count: number } = { count: 0 }
 ): ValidationResult => {
@@ -41,10 +41,10 @@ export const validateJSONComplexity = (
 
   // Check arrays
   if (Array.isArray(obj)) {
-    if (obj.length > 1000) {
+    if (obj.length > 10000) {
       return {
         isValid: false,
-        error: 'Array too large (max 1000 items)'
+        error: 'Array too large (max 10000 items)'
       };
     }
 
