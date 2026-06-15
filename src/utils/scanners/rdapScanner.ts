@@ -25,6 +25,8 @@ export const rdapScanner: DomainScanner = {
           summary: i18next.t('rdap.summary.invalid', { ns: 'scanners' }),
           issues: [i18next.t('rdap.issues.invalidDomain', { ns: 'scanners' })]
         };
+      } else if (parts.length > 2) {
+        domain = parts.slice(-2).join(".");
       }
 
       const tld = parts[parts.length - 1];
