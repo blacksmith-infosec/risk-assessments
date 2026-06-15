@@ -32,7 +32,7 @@ describe('importValidation', () => {
     });
 
     it('rejects arrays that are too large', () => {
-      const obj = { items: Array(1001).fill('item') };
+      const obj = { items: Array(10001).fill('item') };
       const result = validateJSONComplexity(obj);
       expect(result.isValid).toBe(false);
       expect(result.error).toContain('Array too large');
@@ -218,12 +218,12 @@ describe('importValidation', () => {
           domain: 'example.com',
           timestamp: new Date().toISOString(),
           scanners: [],
-          issues: Array(1001).fill('issue')
+          issues: Array(10001).fill('issue')
         }
       });
       const result = validateImportJSON(json);
       expect(result.isValid).toBe(false);
-      expect(result.error).toContain('Array too large (max 1000 items)');
+      expect(result.error).toContain('Array too large (max 10000 items)');
     });
 
     it('rejects JSON files that are too large', () => {
