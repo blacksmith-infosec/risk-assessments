@@ -45,8 +45,6 @@
     "vitest": "^4.0.13"
   },
   "overrides": {
-    "braces": "3.0.3",
-    "eslint": "^10.0.3",
-    "micromatch": "4.0.8"
+    "eslint": "^10.0.3"
   }
 }
