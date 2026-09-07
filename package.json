@@ -19,7 +19,7 @@
     "prop-types": "15.8.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-i18next": "^17.0.12",
+    "react-i18next": "^17.0.13",
     "react-router-dom": "7.18.3",
     "recharts": "^3.10.1"
   },
@@ -31,7 +31,7 @@
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
+    "@types/react-dom": "^19.2.7",
     "@typescript-eslint/eslint-plugin": "^8.69.0",
     "@typescript-eslint/parser": "^8.68.0",
     "@vitejs/plugin-react": "^6.1.1",
