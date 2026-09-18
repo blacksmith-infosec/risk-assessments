@@ -46,5 +46,8 @@
   },
   "overrides": {
     "eslint": "^10.0.3"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true
   }
 }
