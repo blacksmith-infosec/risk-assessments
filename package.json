@@ -19,8 +19,8 @@
     "prop-types": "15.8.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-i18next": "^17.0.13",
-    "react-router-dom": "7.18.3",
+    "react-i18next": "^17.0.14",
+    "react-router-dom": "7.18.4",
     "recharts": "^3.10.1"
   },
   "devDependencies": {
