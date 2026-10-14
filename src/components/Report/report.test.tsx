@@ -259,6 +259,42 @@ describe('Report Component', () => {
       expect(interpretations.length).toBe(2);
     });
 
+    it.each(['complete', 'error'] as const)(
+      'explains RDAP and how its findings are used when the lookup is %s',
+      (status) => {
+        const aggregate = createSampleScannerAggregate('example.com');
+        aggregate.scanners.push({
+          id: 'rdap',
+          label: 'rdap.label',
+          status,
+          startedAt: aggregate.timestamp,
+          data: status === 'error' ? { error: 'Lookup unavailable' } : { dnssecEnabled: true },
+          issues: []
+        });
+        const mockState = createMockAppState({ domainScanAggregate: aggregate });
+        vi.mocked(AppStateContext.useAppState).mockReturnValue(mockState as unknown as AppStateContextValue);
+
+        render(<Report />);
+
+        expect(screen.getByText('Domain Registration (RDAP)')).toBeDefined();
+        expect(screen.getByText(/RDAP \(Registration Data Access Protocol\)/)).toBeDefined();
+        expect(screen.getByText(/expiration.*disrupt your website or email/)).toBeDefined();
+        expect(screen.getByText(/DNSSEC helps protect against forged DNS responses/)).toBeDefined();
+        expect(screen.getByText(/results to flag issues and recommend renewal/)).toBeDefined();
+        expect(screen.getByText(/do not change your questionnaire score/)).toBeDefined();
+        expect(screen.getByText(/lookup fails.*verify the details with your domain registrar/)).toBeDefined();
+      }
+    );
+
+    it('omits the RDAP explanation when that check is not in the report', () => {
+      const mockState = createMockAppState({ domainScanAggregate: createSampleScannerAggregate('example.com') });
+      vi.mocked(AppStateContext.useAppState).mockReturnValue(mockState as unknown as AppStateContextValue);
+
+      render(<Report />);
+
+      expect(screen.queryByText(/Registration Data Access Protocol/)).toBeNull();
+    });
+
     it('does not render scanner section when no aggregate', () => {
       const score = createSampleScore(70);
       const mockState = createMockAppState({ score, domainScanAggregate: undefined });

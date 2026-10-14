@@ -1,6 +1,11 @@
 import { generateWordHTML, exportToWord } from './exportReport';
 import type { ScoreResult } from './scoring';
 import type { DomainScanAggregate } from '../types/domainScan';
+import { createInstance } from 'i18next';
+import englishScanners from '../i18n/locales/en/scanners.json';
+import spanishScanners from '../i18n/locales/es/scanners.json';
+
+const rdapExplanationKeys = ['rdap.report.whatItIs', 'rdap.report.whyWeCheck', 'rdap.report.howWeUseResults'];
 
 // Mock translation function
 const mockT = (key: string): string => {
@@ -185,6 +190,92 @@ describe('exportReport', () => {
       expect(html).toContain('test.com');
       expect(html).toContain('DNS Records');
       expect(html).toContain('5 record types queried');
+    });
+
+    it.each([
+      { language: 'en', translations: englishScanners },
+      { language: 'es', translations: spanishScanners },
+    ])('explains RDAP before its results in the $language Word report', async ({ language, translations }) => {
+      const scannersTranslator = createInstance();
+      await scannersTranslator.init({
+        lng: language,
+        fallbackLng: false,
+        defaultNS: 'scanners',
+        resources: { [language]: { scanners: translations } },
+      });
+      const tScanners = (key: string): string => scannersTranslator.t(key);
+      const aggregate: DomainScanAggregate = {
+        domain: 'example.com',
+        timestamp: '2026-10-14T12:00:00.000Z',
+        scanners: [{
+          id: 'rdap',
+          label: 'rdap.label',
+          status: 'complete',
+          startedAt: '2026-10-14T12:00:00.000Z',
+          summary: 'Domain: example.com, Status: active',
+          data: { status: ['active'], dnssecEnabled: true },
+          issues: [],
+        }],
+        issues: [],
+      };
+
+      const html = generateWordHTML({
+        score: sampleScore,
+        risks: [],
+        bestPractices: [],
+        domainScanAggregate: aggregate,
+        t: mockT,
+        tScanners,
+      });
+      const reportDocument = new DOMParser().parseFromString(html, 'text/html');
+      const scannerItem = reportDocument.querySelector('.scanner-item');
+
+      expect(scannerItem).not.toBeNull();
+      expect(scannerItem?.textContent).toContain('Registration Data Access Protocol');
+      const explanationParagraphs = Array.from(scannerItem!.querySelectorAll('p'));
+      expect(explanationParagraphs).toHaveLength(3);
+      rdapExplanationKeys.forEach((key, index) => {
+        const explanation = tScanners(key);
+        expect(explanation.trim()).not.toBe('');
+        expect(explanation).not.toBe(key);
+        expect(explanationParagraphs[index].textContent).toBe(explanation);
+      });
+      expect(explanationParagraphs[0].previousElementSibling?.tagName).toBe('H4');
+      expect(explanationParagraphs[2].nextElementSibling?.textContent).toContain(aggregate.scanners[0].summary);
+      expect(explanationParagraphs[1].textContent).toMatch(/expir|venc|caduc/i);
+      expect(explanationParagraphs[1].textContent).toMatch(/disrupt|interrump|interrup/i);
+      expect(explanationParagraphs[2].textContent).toMatch(/flag|señal|identific|marc/i);
+      expect(explanationParagraphs[2].textContent).toMatch(/recommend|recomend/i);
+      expect(explanationParagraphs[2].textContent).toMatch(/do not change your questionnaire score|no.*cuestionario/i);
+    });
+
+    it('omits the RDAP explanation from other scanner results', () => {
+      const aggregate: DomainScanAggregate = {
+        domain: 'example.com',
+        timestamp: '2026-10-14T12:00:00.000Z',
+        scanners: [{
+          id: 'dns',
+          label: 'dns.label',
+          status: 'complete',
+          startedAt: '2026-10-14T12:00:00.000Z',
+          summary: '5 record types queried',
+          issues: [],
+        }],
+        issues: [],
+      };
+
+      const html = generateWordHTML({
+        score: sampleScore,
+        risks: [],
+        bestPractices: [],
+        domainScanAggregate: aggregate,
+        t: mockT,
+        tScanners: mockTScanners,
+      });
+
+      expect(html).toContain('5 record types queried');
+      expect(html).not.toContain('Registration Data Access Protocol');
+      rdapExplanationKeys.forEach((key) => expect(html).not.toContain(key));
     });
 
     it('includes scanner issues when present', () => {
