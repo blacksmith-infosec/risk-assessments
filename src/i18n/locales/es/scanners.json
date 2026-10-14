@@ -211,7 +211,12 @@
   },
   "rdap": {
     "label": "Registro de Dominio (RDAP)",
-    "description": "Recupera información de registro de dominio y DNSSEC vía RDAP",
+    "description": "Consulta los registros públicos de un dominio mediante RDAP (Registration Data Access Protocol, o Protocolo de Acceso a Datos de Registro) para revisar la fecha de vencimiento, el estado del registro, los servidores de nombres y la firma DNSSEC indicada.",
+    "report": {
+      "whatItIs": "RDAP (Registration Data Access Protocol, o Protocolo de Acceso a Datos de Registro) es un estándar para consultar los registros públicos de un dominio, incluidos su estado, la fecha de vencimiento y los servidores de nombres (servidores que indican a los navegadores y servicios de correo dónde conectarse).",
+      "whyWeCheck": "Revisamos estos registros para detectar vencimientos y problemas de registro que podrían interrumpir su sitio web o correo electrónico. También revisamos los servidores de nombres indicados y si DNSSEC figura como habilitado. DNSSEC ayuda a proteger contra respuestas DNS falsificadas.",
+      "howWeUseResults": "Usamos los resultados para señalar problemas y recomendar la renovación del dominio, servidores de nombres redundantes o una revisión de DNSSEC. Estos hallazgos no cambian la puntuación del cuestionario. Si la consulta falla o falta algún dato, verifique los detalles con su registrador de dominios (la empresa donde administra su dominio)."
+    },
     "issues": {
       "invalidDomain": "El dominio debe tener al menos un nombre y TLD (ej., ejemplo.com)",
       "noRDAPServer": "No hay servicio RDAP disponible para dominios .{{tld}}.",
@@ -234,7 +239,7 @@
     "interpretation": {
       "incomplete": {
         "message": "Búsqueda RDAP incompleta",
-        "recommendation": "La búsqueda RDAP falló. Esto no afecta la funcionalidad del dominio."
+        "recommendation": "No pudimos verificar estos datos de registro. Una consulta fallida no significa por sí sola que el dominio no esté disponible. Confirme la renovación y la configuración DNS con su registrador de dominios."
       },
       "critical": {
         "message": "El registro del dominio tiene problemas críticos",
