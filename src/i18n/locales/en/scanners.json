@@ -211,7 +211,12 @@
   },
   "rdap": {
     "label": "Domain Registration (RDAP)",
-    "description": "Retrieves domain registration and DNSSEC information via RDAP",
+    "description": "Looks up public domain registration records using RDAP (Registration Data Access Protocol) to check expiration, registration status, nameservers, and reported DNSSEC signing.",
+    "report": {
+      "whatItIs": "RDAP (Registration Data Access Protocol) is a standard way to look up public domain registration records, including registration status, expiration dates, and nameservers (servers that tell browsers and email services where to connect).",
+      "whyWeCheck": "We check these records for expiration and registration problems that could disrupt your website or email. We also review the listed nameservers and whether DNSSEC is reported as enabled. DNSSEC helps protect against forged DNS responses.",
+      "howWeUseResults": "We use the results to flag issues and recommend renewal, nameserver redundancy, or DNSSEC review. These findings do not change your questionnaire score. If the lookup fails or a record is missing, verify the details with your domain registrar (the company where you manage your domain)."
+    },
     "issues": {
       "invalidDomain": "Domain must have at least a name and TLD (e.g., example.com)",
       "noRDAPServer": "No RDAP service available for .{{tld}} domains.",
@@ -234,7 +239,7 @@
     "interpretation": {
       "incomplete": {
         "message": "RDAP lookup incomplete",
-        "recommendation": "RDAP lookup failed. This doesn't affect domain functionality."
+        "recommendation": "We could not verify these registration details. A failed lookup does not by itself mean the domain is unavailable. Confirm renewal and DNS settings with your domain registrar."
       },
       "critical": {
         "message": "Domain registration has critical issues",
