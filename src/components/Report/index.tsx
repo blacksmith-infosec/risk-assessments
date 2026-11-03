@@ -128,6 +128,13 @@ const Report: React.FC = () => {
                       <span className='scanner-card-title'>{tScanners(sc.label)}</span>
                       <span className={`scanner-card-status scanner-card-status-${sc.status}`}>{sc.status}</span>
                     </div>
+                    {sc.id === 'rdap' && (
+                      <div className='scanner-description'>
+                        <p>{tScanners('rdap.report.whatItIs')}</p>
+                        <p>{tScanners('rdap.report.whyWeCheck')}</p>
+                        <p>{tScanners('rdap.report.howWeUseResults')}</p>
+                      </div>
+                    )}
                     {sc.summary && <div className='scanner-card-summary'>{sc.summary}</div>}
                     <div className={`scanner-card-interpretation sev-${interp.severity}`}>
                       <strong>{interp.message}</strong>

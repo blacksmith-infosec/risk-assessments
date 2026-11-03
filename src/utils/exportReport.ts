@@ -128,6 +128,11 @@ export const generateWordHTML = (options: ExportReportOptions): string => {
       const translatedStatus = tScanners(`common.status.${sc.status}`);
       htmlContent += '\n    <div class="scanner-item">' +
         `\n      <h4>${translatedLabel} <span class="${statusClass}">[${translatedStatus}]</span></h4>`;
+      if (sc.id === 'rdap') {
+        htmlContent += `\n      <p>${tScanners('rdap.report.whatItIs')}</p>` +
+          `\n      <p>${tScanners('rdap.report.whyWeCheck')}</p>` +
+          `\n      <p>${tScanners('rdap.report.howWeUseResults')}</p>`;
+      }
       if (sc.summary) {
         htmlContent += `      <div><strong>${t('report.wordExport.summary')}</strong> ${sc.summary}</div>`;
       }
