@@ -7,10 +7,19 @@ updates:
     reviewers:
       - "jcasner"
     groups:
+      eslint:
+        patterns:
+        - "eslint*"
+        - "@eslint*"
+      i18next:
+        patterns:
+        - "i18next*"
+        - "i18next-browser-languagedetector"
       react:
         patterns:
-        - "*react*"
-        - "@react*"
+        - "react*dom"
+        - "react"
+        - "@types/react*"
       vite:
         patterns:
         - "vite*"
