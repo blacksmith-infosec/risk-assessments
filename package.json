@@ -13,7 +13,7 @@
   "author": "Jared Casner <jcasner@blacksmithinfosec.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@amplitude/analytics-browser": "^2.48.0",
+    "@amplitude/analytics-browser": "^2.49.2",
     "i18next": "^27.0.1",
     "i18next-browser-languagedetector": "^8.3.0",
     "prop-types": "15.8.1",
